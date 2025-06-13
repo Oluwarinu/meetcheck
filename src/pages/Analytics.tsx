@@ -1,0 +1,146 @@
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Search, Clock, Users, TrendingUp } from "lucide-react";
+import { StatsCard } from "@/components/StatsCard";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+const attendanceData = [
+  { week: 'Week 1', attendance: 180 },
+  { week: 'Week 2', attendance: 220 },
+  { week: 'Week 3', attendance: 200 },
+  { week: 'Week 4', attendance: 280 },
+];
+
+const sessionData = [
+  {
+    session: 'Session 1: Keynote',
+    startTime: '9:00 AM',
+    endTime: '10:00 AM',
+    attendees: 150,
+    checkInRate: 80
+  },
+  {
+    session: 'Session 2: Workshop',
+    startTime: '11:00 AM',
+    endTime: '12:00 PM',
+    attendees: 100,
+    checkInRate: 75
+  },
+  {
+    session: 'Session 3: Networking',
+    startTime: '1:00 PM',
+    endTime: '2:00 PM',
+    attendees: 80,
+    checkInRate: 60
+  }
+];
+
+export default function Analytics() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Event Analytics</h1>
+        <p className="text-muted-foreground">Track attendance, engagement, and more for your events.</p>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search events" className="pl-10" />
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatsCard
+          title="Total Attendance"
+          value="250"
+          icon={<Users className="h-4 w-4" />}
+        />
+        <StatsCard
+          title="Average Check-in Time"
+          value="10:30 AM"
+          icon={<Clock className="h-4 w-4" />}
+        />
+        <StatsCard
+          title="Unique Attendees"
+          value="200"
+          icon={<Users className="h-4 w-4" />}
+        />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Attendance Trends</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <div className="flex items-center gap-2 text-sm">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              <span className="font-semibold text-green-600">+15%</span>
+              <span className="text-muted-foreground">Last 30 Days +15%</span>
+            </div>
+          </div>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={attendanceData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="week" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="attendance" stroke="hsl(var(--meetcheck-blue))" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Session Attendance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 font-medium">Session</th>
+                  <th className="text-left py-2 font-medium">Start Time</th>
+                  <th className="text-left py-2 font-medium">End Time</th>
+                  <th className="text-left py-2 font-medium">Attendees</th>
+                  <th className="text-left py-2 font-medium">Check-in Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sessionData.map((session, index) => (
+                  <tr key={index} className="border-b">
+                    <td className="py-3">{session.session}</td>
+                    <td className="py-3 text-muted-foreground">{session.startTime}</td>
+                    <td className="py-3 text-muted-foreground">{session.endTime}</td>
+                    <td className="py-3">{session.attendees}</td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-12 bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-meetcheck-blue h-2 rounded-full" 
+                            style={{ width: `${session.checkInRate}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-sm">{session.checkInRate}</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="flex gap-2 mt-4">
+            <button className="px-4 py-2 text-sm border rounded">Export Report</button>
+            <button className="px-4 py-2 text-sm bg-meetcheck-blue text-white rounded">Download CSV</button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
