@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -51,10 +50,10 @@ export default function HomePage() {
             </nav>
             <div className="flex items-center space-x-4">
               <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
-                Log In
+                <Link to="/login">Log In</Link>
               </Button>
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                Get Started
+                <Link to="/signup">Get Started</Link>
               </Button>
             </div>
           </div>
@@ -75,7 +74,7 @@ export default function HomePage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg">
-                  <Link to="/dashboard" className="flex items-center">
+                  <Link to="/signup" className="flex items-center">
                     Get Started
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
@@ -156,7 +155,7 @@ export default function HomePage() {
             Join thousands of event organizers who trust MeetCheck to streamline their attendance tracking and gain valuable insights.
           </p>
           <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg">
-            <Link to="/dashboard" className="flex items-center">
+            <Link to="/signup" className="flex items-center">
               Get Started
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
