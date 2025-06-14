@@ -35,8 +35,7 @@ const App = () => (
                 <Route path="/create-event" element={<CreateEvent />} />
                 <Route path="/events/:id/qr" element={<QRCode />} />
                 <Route path="/check-in" element={<CheckIn />} />
-                <Route path="/reports" element={<Analytics />} />
-                <Route path="/attendees" element={<Analytics />} />
+                <Route path="/analytics" element={<Analytics />} />
                 <Route path="/templates" element={<Analytics />} />
                 <Route path="/settings" element={<Analytics />} />
                 <Route path="*" element={<NotFound />} />

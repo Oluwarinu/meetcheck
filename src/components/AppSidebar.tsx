@@ -1,5 +1,4 @@
-
-import { Calendar, Home, Settings, BarChart3, Users, FileText } from "lucide-react";
+import { Calendar, Home, Settings, BarChart3, FileText } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -26,18 +25,13 @@ const menuItems = [
     icon: Calendar,
   },
   {
-    title: "Attendees",
-    url: "/attendees",
-    icon: Users,
-  },
-  {
     title: "Templates",
     url: "/templates",
     icon: FileText,
   },
   {
-    title: "Reports",
-    url: "/reports",
+    title: "Analytics",
+    url: "/analytics",
     icon: BarChart3,
   },
   {

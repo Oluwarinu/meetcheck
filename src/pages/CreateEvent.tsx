@@ -6,8 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+
+const defaultParticipantFields = [
+  { id: "name", label: "Full Name", required: true, enabled: true },
+  { id: "email", label: "Email Address", required: true, enabled: true },
+  { id: "phone", label: "Phone Number", required: false, enabled: false },
+  { id: "registration", label: "Registration Number", required: false, enabled: false },
+  { id: "gender", label: "Gender", required: false, enabled: false },
+  { id: "organization", label: "Organization", required: false, enabled: false },
+  { id: "position", label: "Position/Title", required: false, enabled: false },
+  { id: "dietary", label: "Dietary Requirements", required: false, enabled: false },
+];
 
 export default function CreateEvent() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -17,11 +29,12 @@ export default function CreateEvent() {
     date: "",
     time: "",
     location: "",
-    capacity: ""
+    capacity: "",
+    participantFields: defaultParticipantFields
   });
   const navigate = useNavigate();
 
-  const totalSteps = 6;
+  const totalSteps = 7;
   const progress = (currentStep / totalSteps) * 100;
 
   const handleNext = () => {
@@ -44,6 +57,28 @@ export default function CreateEvent() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const updateParticipantField = (fieldId: string, property: 'enabled' | 'required', value: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      participantFields: prev.participantFields.map(field =>
+        field.id === fieldId ? { ...field, [property]: value } : field
+      )
+    }));
+  };
+
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 1: return "Basic Information";
+      case 2: return "Date & Time";
+      case 3: return "Location & Capacity";
+      case 4: return "Participant Information";
+      case 5: return "Attendance Settings";
+      case 6: return "Location Verification";
+      case 7: return "Review & Create";
+      default: return "Event Details";
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-6">
@@ -64,7 +99,7 @@ export default function CreateEvent() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Event Details</CardTitle>
+          <CardTitle>{getStepTitle()}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {currentStep === 1 && (
@@ -144,20 +179,65 @@ export default function CreateEvent() {
           )}
 
           {currentStep === 4 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium mb-3">Configure Participant Information Fields</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Select which information you want to collect from participants during registration.
+                </p>
+              </div>
+              <div className="space-y-3">
+                {formData.participantFields.map((field) => (
+                  <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id={`field-${field.id}`}
+                        checked={field.enabled}
+                        onCheckedChange={(checked) => 
+                          updateParticipantField(field.id, 'enabled', checked as boolean)
+                        }
+                        disabled={field.id === 'name' || field.id === 'email'}
+                      />
+                      <Label htmlFor={`field-${field.id}`} className="font-medium">
+                        {field.label}
+                      </Label>
+                    </div>
+                    {field.enabled && (
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`required-${field.id}`}
+                          checked={field.required}
+                          onCheckedChange={(checked) => 
+                            updateParticipantField(field.id, 'required', checked as boolean)
+                          }
+                          disabled={field.id === 'name' || field.id === 'email'}
+                        />
+                        <Label htmlFor={`required-${field.id}`} className="text-sm text-muted-foreground">
+                          Required
+                        </Label>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {currentStep === 5 && (
             <div className="text-center py-8">
               <h3 className="text-lg font-semibold mb-2">Attendance Settings</h3>
               <p className="text-muted-foreground">Configure how attendees will check in to your event.</p>
             </div>
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 6 && (
             <div className="text-center py-8">
               <h3 className="text-lg font-semibold mb-2">Location Verification</h3>
               <p className="text-muted-foreground">Set up location-based verification for secure check-ins.</p>
             </div>
           )}
 
-          {currentStep === 6 && (
+          {currentStep === 7 && (
             <div className="text-center py-8">
               <h3 className="text-lg font-semibold mb-2">Review & Create</h3>
               <p className="text-muted-foreground">Review your event details and create the event.</p>
@@ -168,6 +248,15 @@ export default function CreateEvent() {
                 <p className="text-sm"><strong>Time:</strong> {formData.time}</p>
                 <p className="text-sm"><strong>Location:</strong> {formData.location}</p>
                 <p className="text-sm"><strong>Capacity:</strong> {formData.capacity}</p>
+                <div className="mt-3">
+                  <p className="text-sm font-medium">Participant Fields:</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formData.participantFields
+                      .filter(field => field.enabled)
+                      .map(field => field.label)
+                      .join(", ")}
+                  </p>
+                </div>
               </div>
             </div>
           )}
