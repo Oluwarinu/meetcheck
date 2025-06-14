@@ -125,8 +125,9 @@ export default function Templates() {
   });
 
   const handleUseTemplate = (template: typeof eventTemplates[0]) => {
-    // Navigate to create event page with template data
-    navigate("/create-event", { state: { template } });
+    // Remove the icon component from template data to avoid cloning issues
+    const { icon, ...templateData } = template;
+    navigate("/create-event", { state: { template: templateData } });
   };
 
   return (
