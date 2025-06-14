@@ -6,11 +6,11 @@ import { Link } from "react-router-dom";
 import AdBanner from "@/components/AdBanner";
 
 const trustedBrands = [
-  { name: "TechCorp", logo: "TC" },
-  { name: "Innovate Solutions", logo: "IS" },
-  { name: "Global Events", logo: "GE" },
-  { name: "EduConnect", logo: "EC" },
-  { name: "HealthFirst", logo: "HF" }
+  { name: "TechCorp", logo: "/lovable-uploads/3171eb93-8b20-4589-92cd-ca3ab45e3ae6.png" },
+  { name: "Innovate Solutions", logo: "/lovable-uploads/2e68b3b7-905c-4054-82aa-ee94905682ec.png" },
+  { name: "Global Events", logo: "/lovable-uploads/578e1e01-c82d-48b5-a62e-009114beed5d.png" },
+  { name: "EduConnect", logo: "/lovable-uploads/4096b316-b016-4e9b-ad53-2c3fdf5df7e1.png" },
+  { name: "HealthFirst", logo: "/lovable-uploads/4d505fb4-3d9e-4113-846f-e9aa21b2502b.png" }
 ];
 
 const features = [
@@ -103,8 +103,12 @@ export default function HomePage() {
             <div className="grid grid-cols-5 gap-8">
               {trustedBrands.map((brand, index) => (
                 <div key={index} className="flex flex-col items-center">
-                  <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center mb-2">
-                    <span className="text-lg font-semibold text-gray-600">{brand.logo}</span>
+                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center mb-2 p-2">
+                    <img 
+                      src={brand.logo} 
+                      alt={brand.name} 
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <span className="text-sm text-gray-500 font-medium">{brand.name}</span>
                 </div>
