@@ -1,11 +1,11 @@
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { EventCard } from "@/components/EventCard";
 
 const sampleEvents = [
   {
@@ -14,7 +14,6 @@ const sampleEvents = [
     date: "July 15, 2024",
     status: "Upcoming" as const,
     attendance: "0/50",
-    location: "Innovation Center"
   },
   {
     id: "2",
@@ -22,7 +21,6 @@ const sampleEvents = [
     date: "June 20, 2024",
     status: "In Progress" as const,
     attendance: "25/100",
-    location: "Community Hall"
   },
   {
     id: "3",
@@ -30,7 +28,6 @@ const sampleEvents = [
     date: "May 25, 2024",
     status: "Completed" as const,
     attendance: "45/50",
-    location: "Tech Hub"
   },
   {
     id: "4",
@@ -38,7 +35,6 @@ const sampleEvents = [
     date: "April 10, 2024",
     status: "Completed" as const,
     attendance: "75/100",
-    location: "Business Center"
   },
   {
     id: "5",
@@ -46,7 +42,6 @@ const sampleEvents = [
     date: "March 5, 2024",
     status: "Completed" as const,
     attendance: "150/200",
-    location: "Convention Center"
   }
 ];
 
@@ -60,12 +55,24 @@ export default function Events() {
     return false;
   });
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Upcoming":
+        return "bg-blue-100 text-blue-800 hover:bg-blue-100";
+      case "In Progress":
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
+      case "Completed":
+        return "bg-green-100 text-green-800 hover:bg-green-100";
+      default:
+        return "bg-gray-100 text-gray-800 hover:bg-gray-100";
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Events</h1>
-          <p className="text-muted-foreground">Manage your events and track attendance</p>
         </div>
         <Button asChild className="bg-meetcheck-blue hover:bg-blue-600">
           <Link to="/create-event" className="flex items-center gap-2">
@@ -83,13 +90,50 @@ export default function Events() {
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
+          <div className="bg-white rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="font-medium">Event Name</TableHead>
+                  <TableHead className="font-medium">Date</TableHead>
+                  <TableHead className="font-medium">Status</TableHead>
+                  <TableHead className="font-medium">Attendance</TableHead>
+                  <TableHead className="font-medium text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredEvents.map((event) => (
+                  <TableRow key={event.id} className="hover:bg-gray-50">
+                    <TableCell className="font-medium">{event.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{event.date}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className={getStatusColor(event.status)}>
+                        {event.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{event.attendance}</TableCell>
+                    <TableCell className="text-center">
+                      <Button asChild variant="outline" size="sm" className="text-meetcheck-blue border-meetcheck-blue hover:bg-meetcheck-light-blue">
+                        <Link to={`/events/${event.id}`}>View</Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Bottom left New Event button */}
+      <div className="fixed bottom-6 left-6">
+        <Button asChild className="bg-meetcheck-blue hover:bg-blue-600 shadow-lg">
+          <Link to="/create-event" className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            New Event
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }
