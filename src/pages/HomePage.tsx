@@ -61,167 +61,93 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Enhanced Hero Section */}
-      <section className="relative py-20 lg:py-32 overflow-hidden">
-        {/* Enhanced Background with Workspace Aesthetic */}
+      {/* Hero Section - Centered Layout with Floating Images */}
+      <section className="relative py-20 lg:py-32 overflow-hidden min-h-[80vh] flex items-center">
+        {/* Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30"></div>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/20 via-transparent to-transparent"></div>
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-indigo-100/20 via-transparent to-transparent"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-            {/* Left Content */}
-            <div className="text-center lg:text-left">
-              <h1 className="text-5xl lg:text-7xl font-black text-gray-900 mb-6 leading-tight tracking-tight">
-                Automate Your
-                <span className="block text-blue-600">Attendance Tracking</span>
-              </h1>
-              <p className="text-xl lg:text-2xl text-gray-600 mb-8 max-w-2xl font-medium leading-relaxed">
-                MeetCheck is the all-in-one solution for managing attendance at your events. Track attendance, gain insights, and streamline your event management process.
-              </p>
-              
-              {/* Primary CTA */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 text-xl font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200">
-                  <Link to="/signup" className="flex items-center">
-                    Get Started Free
-                    <ArrowRight className="ml-3 h-6 w-6" />
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" className="px-10 py-6 text-xl font-semibold border-2 border-gray-300 hover:border-blue-600 hover:text-blue-600 transition-all duration-200">
-                  Watch Demo
-                </Button>
-              </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          {/* Floating Images */}
+          {/* Top Left - Woman with headphones */}
+          <div className="absolute top-8 left-8 lg:left-16 hidden lg:block">
+            <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
+              <img 
+                src="/lovable-uploads/18f6ae70-cfff-4d0c-8a00-4b0b09cc16ce.png" 
+                alt="Professional woman working with headphones"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
 
-              {/* Trust Indicators */}
-              <div className="flex items-center justify-center lg:justify-start space-x-6 text-sm text-gray-500">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>Free to start</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
-                  <span>No credit card required</span>
-                </div>
-              </div>
+          {/* Top Right - Professional businessman */}
+          <div className="absolute top-8 right-8 lg:right-16 hidden lg:block">
+            <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
+              <img 
+                src="/lovable-uploads/ab1b618d-f283-41ad-84b8-ffbfae6be08f.png" 
+                alt="Professional businessman portrait"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Bottom Left - Woman celebrating */}
+          <div className="absolute bottom-8 left-8 lg:left-16 hidden lg:block">
+            <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
+              <img 
+                src="/lovable-uploads/6378372e-b08d-41cb-ba5a-e19e6ac2835e.png" 
+                alt="Woman celebrating with phone"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Bottom Right - Man with laptop outdoors */}
+          <div className="absolute bottom-8 right-8 lg:right-16 hidden lg:block">
+            <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
+              <img 
+                src="/lovable-uploads/1a0d85ca-5f1c-4c9f-aac2-05064b115483.png" 
+                alt="Man working with laptop outdoors"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Centered Main Content */}
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="text-5xl lg:text-7xl font-black text-gray-900 mb-6 leading-tight tracking-tight">
+              Automate Your
+              <span className="block text-blue-600">Attendance Tracking</span>
+            </h1>
+            <p className="text-xl lg:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto font-medium leading-relaxed">
+              MeetCheck is the all-in-one solution for managing attendance at your events. Track attendance, gain insights, and streamline your event management process.
+            </p>
+            
+            {/* Primary CTA */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 text-xl font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200">
+                <Link to="/signup" className="flex items-center">
+                  Get Started Free
+                  <ArrowRight className="ml-3 h-6 w-6" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="lg" className="px-10 py-6 text-xl font-semibold border-2 border-gray-300 hover:border-blue-600 hover:text-blue-600 transition-all duration-200">
+                Watch Demo
+              </Button>
             </div>
 
-            {/* Right Visual Content */}
-            <div className="mt-16 lg:mt-0">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-96">
-                {/* Dashboard Analytics Mockup */}
-                <div className="relative">
-                  <Card className="h-full bg-white/90 backdrop-blur-sm shadow-2xl border-0 overflow-hidden">
-                    <CardContent className="p-6 h-full">
-                      <div className="mb-4">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Real-time Analytics</h3>
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                          <Activity className="h-4 w-4 text-green-500" />
-                          <span>Live Event: Tech Conference 2024</span>
-                        </div>
-                      </div>
-                      
-                      {/* Progress Bars */}
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Attendance Rate</span>
-                            <span className="font-semibold text-blue-600">87%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-3">
-                            <div className="bg-blue-600 h-3 rounded-full" style={{width: '87%'}}></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Check-ins Today</span>
-                            <span className="font-semibold text-green-600">342/400</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-3">
-                            <div className="bg-green-500 h-3 rounded-full" style={{width: '85%'}}></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span>Peak Hours</span>
-                            <span className="font-semibold text-orange-600">2:00-4:00 PM</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-3">
-                            <div className="bg-orange-500 h-3 rounded-full" style={{width: '95%'}}></div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Stats Grid */}
-                      <div className="grid grid-cols-2 gap-3 mt-6">
-                        <div className="text-center p-3 bg-blue-50 rounded-lg">
-                          <div className="text-2xl font-bold text-blue-600">342</div>
-                          <div className="text-xs text-gray-600">Attendees</div>
-                        </div>
-                        <div className="text-center p-3 bg-green-50 rounded-lg">
-                          <div className="text-2xl font-bold text-green-600">12</div>
-                          <div className="text-xs text-gray-600">Events</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* QR Code Scanning Interface */}
-                <div className="relative">
-                  <Card className="h-full bg-white/90 backdrop-blur-sm shadow-2xl border-0 overflow-hidden">
-                    <CardContent className="p-6 h-full flex flex-col items-center justify-center">
-                      <div className="text-center mb-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Quick Check-in</h3>
-                        <p className="text-sm text-gray-600">Scan QR code to attend</p>
-                      </div>
-                      
-                      {/* QR Code Mockup */}
-                      <div className="relative mb-6">
-                        <div className="w-32 h-32 bg-gray-900 rounded-lg flex items-center justify-center mb-4">
-                          <div className="grid grid-cols-8 gap-1 w-24 h-24">
-                            {Array.from({ length: 64 }).map((_, i) => (
-                              <div 
-                                key={i} 
-                                className={`w-2 h-2 ${Math.random() > 0.5 ? 'bg-white' : 'bg-gray-900'}`}
-                              ></div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="absolute -top-2 -left-2 w-6 h-6 border-4 border-blue-500 border-b-transparent border-r-transparent"></div>
-                        <div className="absolute -top-2 -right-2 w-6 h-6 border-4 border-blue-500 border-b-transparent border-l-transparent"></div>
-                        <div className="absolute -bottom-2 -left-2 w-6 h-6 border-4 border-blue-500 border-t-transparent border-r-transparent"></div>
-                        <div className="absolute -bottom-2 -right-2 w-6 h-6 border-4 border-blue-500 border-t-transparent border-l-transparent"></div>
-                      </div>
-
-                      {/* Scanning Animation */}
-                      <div className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-                        <Scan className="h-4 w-4 text-blue-500 animate-pulse" />
-                        <span>Ready to scan</span>
-                      </div>
-
-                      {/* Recent Check-ins */}
-                      <div className="w-full space-y-2">
-                        <div className="flex items-center space-x-2 text-xs text-gray-500">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span>John D. checked in</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-xs text-gray-500">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span>Sarah M. checked in</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-xs text-gray-500">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span>Mike K. checked in</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+            {/* Trust Indicators */}
+            <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <span>Free to start</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-5 w-5 text-green-500" />
+                <span>No credit card required</span>
               </div>
             </div>
           </div>
