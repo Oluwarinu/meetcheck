@@ -13,6 +13,7 @@ import CreateEvent from "./pages/CreateEvent";
 import QRCode from "./pages/QRCode";
 import CheckIn from "./pages/CheckIn";
 import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,7 +33,7 @@ const App = () => (
           <Route path="/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
           <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
           <Route path="/templates" element={<DashboardLayout><Analytics /></DashboardLayout>} />
-          <Route path="/settings" element={<DashboardLayout><Analytics /></DashboardLayout>} />
+          <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
