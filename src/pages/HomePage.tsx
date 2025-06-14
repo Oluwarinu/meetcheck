@@ -103,7 +103,7 @@ export default function HomePage() {
             <div className="grid grid-cols-5 gap-8">
               {trustedBrands.map((brand, index) => (
                 <div key={index} className="flex flex-col items-center">
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center mb-2 p-2">
+                  <div className="w-32 h-32 bg-white rounded-lg flex items-center justify-center mb-2 p-2">
                     <img 
                       src={brand.logo} 
                       alt={brand.name} 
