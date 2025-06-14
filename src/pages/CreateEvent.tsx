@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const defaultParticipantFields = [
   { id: "name", label: "Full Name", required: true, enabled: true },
@@ -21,8 +20,34 @@ const defaultParticipantFields = [
   { id: "dietary", label: "Dietary Requirements", required: false, enabled: false },
 ];
 
+const getTemplateTitle = (templateId: string) => {
+  const titles = {
+    lecture: "Academic Lecture - ",
+    wedding: "Wedding Celebration - ",
+    conference: "Business Conference - ",
+    workshop: "Workshop/Training - "
+  };
+  return titles[templateId as keyof typeof titles] || "";
+};
+
+const getTemplateDescription = (templateId: string) => {
+  const descriptions = {
+    lecture: "Join us for an engaging academic presentation covering important topics in your field of study.",
+    wedding: "Celebrate this special day with us as we unite two hearts in marriage. Your presence will make our day even more memorable.",
+    conference: "Connect with industry professionals, learn from expert speakers, and discover the latest trends and innovations.",
+    workshop: "Enhance your skills through hands-on learning and interactive sessions led by experienced instructors."
+  };
+  return descriptions[templateId as keyof typeof descriptions] || "";
+};
+
 export default function CreateEvent() {
   const [currentStep, setCurrentStep] = useState(1);
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Get template data from navigation state
+  const template = location.state?.template;
+  
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -32,7 +57,21 @@ export default function CreateEvent() {
     capacity: "",
     participantFields: defaultParticipantFields
   });
-  const navigate = useNavigate();
+
+  // Pre-fill form data when template is provided
+  useEffect(() => {
+    if (template) {
+      const templateCapacity = template.capacity?.toString() || "";
+      
+      setFormData(prev => ({
+        ...prev,
+        title: getTemplateTitle(template.id),
+        description: getTemplateDescription(template.id),
+        capacity: templateCapacity,
+        participantFields: template.participantFields || defaultParticipantFields
+      }));
+    }
+  }, [template]);
 
   const totalSteps = 7;
   const progress = (currentStep / totalSteps) * 100;
@@ -41,9 +80,17 @@ export default function CreateEvent() {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Handle form submission
+      // Handle form submission and generate QR code
+      const eventId = Date.now().toString(); // Simple ID generation
       console.log("Event created:", formData);
-      navigate("/events");
+      
+      // Navigate to QR code page with event data
+      navigate(`/events/${eventId}/qr`, { 
+        state: { 
+          eventData: formData,
+          eventId: eventId
+        } 
+      });
     }
   };
 
@@ -90,9 +137,18 @@ export default function CreateEvent() {
           <span>Events</span>
           <span>/</span>
           <span>New Event</span>
+          {template && (
+            <>
+              <span>/</span>
+              <span>{template.title}</span>
+            </>
+          )}
         </div>
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Step {currentStep} of {totalSteps}</h1>
+          <h1 className="text-2xl font-bold">
+            Step {currentStep} of {totalSteps}
+            {template && <span className="text-lg font-normal text-muted-foreground ml-2">- {template.title}</span>}
+          </h1>
         </div>
         <Progress value={progress} className="h-2" />
       </div>
@@ -104,6 +160,13 @@ export default function CreateEvent() {
         <CardContent className="space-y-6">
           {currentStep === 1 && (
             <div className="space-y-4">
+              {template && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Template:</strong> {template.title} - Form fields have been pre-configured for you!
+                  </p>
+                </div>
+              )}
               <div>
                 <Label htmlFor="title">Event Title</Label>
                 <Input
@@ -174,6 +237,11 @@ export default function CreateEvent() {
                   onChange={(e) => updateFormData("capacity", e.target.value)}
                   className="mt-1"
                 />
+                {template && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Recommended capacity for {template.title.toLowerCase()}: {template.capacity}
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -183,7 +251,10 @@ export default function CreateEvent() {
               <div>
                 <h3 className="text-lg font-medium mb-3">Configure Participant Information Fields</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Select which information you want to collect from participants during registration.
+                  {template 
+                    ? `These fields have been pre-configured based on the ${template.title} template. You can adjust them as needed.`
+                    : "Select which information you want to collect from participants during registration."
+                  }
                 </p>
               </div>
               <div className="space-y-3">
@@ -273,7 +344,7 @@ export default function CreateEvent() {
               onClick={handleNext}
               className="bg-meetcheck-blue hover:bg-blue-600"
             >
-              {currentStep === totalSteps ? "Create Event" : "Next"}
+              {currentStep === totalSteps ? "Create Event & Generate QR" : "Next"}
               {currentStep < totalSteps && <ChevronRight className="h-4 w-4 ml-1" />}
             </Button>
           </div>
