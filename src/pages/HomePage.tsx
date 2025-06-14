@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Users, Calendar, TrendingUp, ArrowRight, QrCode, Clock, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
+import AdBanner from "@/components/AdBanner";
 
 const trustedBrands = [
   { name: "TechCorp", logo: "TC" },
@@ -110,6 +111,19 @@ export default function HomePage() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Ad Banner Section */}
+      <section className="py-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-4">
+            <span className="text-xs text-gray-400 uppercase tracking-wide">Advertisement</span>
+          </div>
+          <AdBanner 
+            adSlot="1234567890" 
+            className="max-w-4xl mx-auto"
+          />
         </div>
       </section>
 
