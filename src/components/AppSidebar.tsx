@@ -1,5 +1,6 @@
-import { Calendar, Home, Settings, BarChart3, FileText } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+
+import { Calendar, Home, Settings, BarChart3, FileText, LogOut } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +12,7 @@ import {
   SidebarMenuItem,
   SidebarHeader,
 } from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
@@ -43,15 +45,33 @@ const menuItems = [
 
 export function AppSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    console.log("User logged out");
+    // Clear any stored auth data here if needed
+    navigate("/");
+  };
 
   return (
     <Sidebar className="border-r border-border">
       <SidebarHeader className="p-6">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-meetcheck-blue rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">M</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-meetcheck-blue rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">M</span>
+            </div>
+            <span className="font-semibold text-lg">MeetCheck</span>
           </div>
-          <span className="font-semibold text-lg">MeetCheck</span>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleLogout}
+            className="h-8 w-8 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+            title="Logout"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </SidebarHeader>
       <SidebarContent>
