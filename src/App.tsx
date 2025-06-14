@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,6 +14,7 @@ import QRCode from "./pages/QRCode";
 import CheckIn from "./pages/CheckIn";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
+import Templates from "./pages/Templates";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -35,7 +37,7 @@ const App = () => (
           <Route path="/events/:id/qr" element={<DashboardLayout><QRCode /></DashboardLayout>} />
           <Route path="/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
           <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
-          <Route path="/templates" element={<DashboardLayout><Analytics /></DashboardLayout>} />
+          <Route path="/templates" element={<DashboardLayout><Templates /></DashboardLayout>} />
           <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
