@@ -18,18 +18,18 @@ interface StepRendererParams {
     value: boolean | string | any
   ) => void;
   updateFlierData: (flierData: string | null) => void;
+  currentStep: number;
 }
 
-export function useStepRenderer(
-  currentStep: number,
-  {
-    formData,
-    template,
-    updateFormData,
-    updateParticipantField,
-    updateFlierData,
-  }: StepRendererParams
-) {
+// This is now a regular (not a hook) rendering function
+export function StepRenderer({
+  currentStep,
+  formData,
+  template,
+  updateFormData,
+  updateParticipantField,
+  updateFlierData,
+}: StepRendererParams) {
   switch (currentStep) {
     case 1:
       return (

@@ -1,10 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { defaultParticipantFields, getTemplateTitle, getTemplateDescription } from "@/utils/eventTemplates";
 import { StepHeader } from "./create-event/StepHeader";
 import { StepperNavigation } from "./create-event/StepperNavigation";
-import { useStepRenderer } from "./create-event/useStepRenderer";
+import { StepRenderer } from "./create-event/useStepRenderer";
 
 export default function CreateEvent() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -91,10 +90,14 @@ export default function CreateEvent() {
     }
   };
 
-  const stepElement = useStepRenderer(
+  const stepElement = StepRenderer({
     currentStep,
-    { formData, template, updateFormData, updateParticipantField, updateFlierData }
-  );
+    formData,
+    template,
+    updateFormData,
+    updateParticipantField,
+    updateFlierData,
+  });
 
   return (
     <div className="max-w-2xl mx-auto">
