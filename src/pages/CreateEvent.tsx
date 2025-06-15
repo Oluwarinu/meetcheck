@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,8 @@ export default function CreateEvent() {
     time: "",
     location: "",
     capacity: "",
-    participantFields: defaultParticipantFields
+    participantFields: defaultParticipantFields,
+    flierData: null as string | null
   });
 
   useEffect(() => {
@@ -87,6 +87,10 @@ export default function CreateEvent() {
     }));
   };
 
+  const updateFlierData = (flierData: string | null) => {
+    setFormData(prev => ({ ...prev, flierData }));
+  };
+
   const getStepTitle = () => {
     switch (currentStep) {
       case 1: return "Basic Information";
@@ -135,9 +139,9 @@ export default function CreateEvent() {
         );
       case 5:
         return (
-          <PlaceholderStep 
-            title="Attendance Settings" 
-            description="Configure how attendees will check in to your event." 
+          <FlierUploadStep 
+            flierData={formData.flierData}
+            onFlierUpdate={updateFlierData}
           />
         );
       case 6:
