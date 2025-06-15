@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Calendar, Home, Settings, BarChart3, FileText, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
