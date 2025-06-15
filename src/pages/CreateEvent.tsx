@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -97,7 +98,7 @@ export default function CreateEvent() {
       case 2: return "Date & Time";
       case 3: return "Location & Capacity";
       case 4: return "Participant Information";
-      case 5: return "Attendance Settings";
+      case 5: return "Event Flier";
       case 6: return "Location Verification";
       case 7: return "Review & Create";
       default: return "Event Details";
