@@ -31,7 +31,7 @@ const App = () => (
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<DashboardLayout />} />
+          <Route path="/dashboard" element={<DashboardLayout><Index /></DashboardLayout>} />
           <Route path="/events" element={<DashboardLayout><Events /></DashboardLayout>} />
           <Route path="/create-event" element={<DashboardLayout><CreateEvent /></DashboardLayout>} />
           <Route path="/events/:id/qr" element={<DashboardLayout><QRCode /></DashboardLayout>} />
@@ -54,7 +54,7 @@ const DashboardLayout = ({ children }: { children?: React.ReactNode }) => (
         <div className="mb-4">
           <SidebarTrigger />
         </div>
-        {children || <Index />}
+        {children}
       </main>
     </div>
   </SidebarProvider>
