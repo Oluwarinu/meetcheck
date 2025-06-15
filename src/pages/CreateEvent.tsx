@@ -32,7 +32,7 @@ export default function CreateEvent() {
     location: "",
     capacity: "",
     participantFields: defaultParticipantFields,
-    flierData: null as string | null
+    flierData: null as string | null,
   });
 
   useEffect(() => {
@@ -74,17 +74,35 @@ export default function CreateEvent() {
     }
   };
 
+  // Update single field 
   const updateFormData = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const updateParticipantField = (fieldId: string, property: 'enabled' | 'required', value: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      participantFields: prev.participantFields.map(field =>
-        field.id === fieldId ? { ...field, [property]: value } : field
-      )
-    }));
+  // Enhanced updateParticipantField: allow adding fields
+  const updateParticipantField = (
+    fieldId: string,
+    property: "enabled" | "required" | "addCustom",
+    value: boolean | string | any
+  ) => {
+    setFormData(prev => {
+      if (property === "addCustom") {
+        // Add custom field to participantFields list
+        return {
+          ...prev,
+          participantFields: [
+            ...prev.participantFields,
+            value // value should be the whole new field object
+          ],
+        };
+      }
+      return {
+        ...prev,
+        participantFields: prev.participantFields.map(field =>
+          field.id === fieldId ? { ...field, [property]: value } : field
+        ),
+      };
+    });
   };
 
   const updateFlierData = (flierData: string | null) => {
