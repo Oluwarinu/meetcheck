@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +40,10 @@ export default function CheckIn() {
   const [progress, setProgress] = useState(0);
   const [locationStatus, setLocationStatus] = useState<'requesting' | 'granted' | 'denied' | 'unavailable'>('requesting');
   const [locationAccuracy, setLocationAccuracy] = useState<number>(0);
+  const [eventData, setEventData] = useState<{
+    title?: string;
+    flierData?: string | null;
+  } | null>(null);
   const { toast } = useToast();
 
   // Get user's IP address
@@ -58,6 +61,21 @@ export default function CheckIn() {
     };
     
     fetchIP();
+  }, []);
+
+  // Get event data from URL parameters or localStorage
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get('eventId');
+    
+    if (eventId) {
+      // In a real app, you'd fetch from backend
+      // For now, we'll try to get from localStorage or use sample data
+      const storedEventData = localStorage.getItem(`event-${eventId}`);
+      if (storedEventData) {
+        setEventData(JSON.parse(storedEventData));
+      }
+    }
   }, []);
 
   // Request location permission and get coordinates
@@ -185,6 +203,24 @@ export default function CheckIn() {
 
   return (
     <div className="max-w-md mx-auto">
+      {/* Event Flier Display */}
+      {eventData?.flierData && (
+        <Card className="mb-6">
+          <CardContent className="p-0">
+            <img 
+              src={eventData.flierData} 
+              alt="Event Flier" 
+              className="w-full h-auto rounded-t-lg"
+            />
+            {eventData.title && (
+              <div className="p-4">
+                <h2 className="font-semibold text-center">{eventData.title}</h2>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader className="text-center">
           <div className="w-8 h-8 bg-meetcheck-blue rounded-lg flex items-center justify-center mx-auto mb-2">

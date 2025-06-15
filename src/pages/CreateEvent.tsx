@@ -10,6 +10,7 @@ import { DateTimeStep } from "@/components/create-event/DateTimeStep";
 import { LocationCapacityStep } from "@/components/create-event/LocationCapacityStep";
 import { ParticipantFieldsStep } from "@/components/create-event/ParticipantFieldsStep";
 import { ReviewStep } from "@/components/create-event/ReviewStep";
+import { FlierUploadStep } from "@/components/create-event/FlierUploadStep";
 import { PlaceholderStep } from "@/components/create-event/PlaceholderStep";
 import { 
   defaultParticipantFields, 
