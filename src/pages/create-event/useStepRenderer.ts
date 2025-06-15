@@ -1,4 +1,5 @@
 
+import React from "react";
 import { BasicInfoStep } from "@/components/create-event/BasicInfoStep";
 import { DateTimeStep } from "@/components/create-event/DateTimeStep";
 import { LocationCapacityStep } from "@/components/create-event/LocationCapacityStep";
