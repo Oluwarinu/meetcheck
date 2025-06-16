@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Crown, ArrowRight } from 'lucide-react';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+import { useNavigate } from 'react-router-dom';
 
 interface UpgradeFeature {
   featureName: string;
@@ -33,9 +34,10 @@ const upgradeFeatures: UpgradeFeature[] = [
 
 const UpgradeTable: React.FC = () => {
   const { tier } = useSubscription();
+  const navigate = useNavigate();
 
   const handleUpgrade = () => {
-    window.open('/pricing', '_blank');
+    navigate('/upgrade');
   };
 
   const getCurrentPlanDisplay = () => {

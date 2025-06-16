@@ -18,6 +18,7 @@ import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Templates from "./pages/Templates";
 import Pricing from "./pages/Pricing";
+import Upgrade from "./pages/Upgrade";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/upgrade" element={<Upgrade />} />
             <Route path="/dashboard" element={<DashboardLayout><Index /></DashboardLayout>} />
             <Route path="/events" element={<DashboardLayout><Events /></DashboardLayout>} />
             <Route path="/create-event" element={<DashboardLayout><CreateEvent /></DashboardLayout>} />

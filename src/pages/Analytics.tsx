@@ -6,7 +6,6 @@ import { Search, Clock, Users, TrendingUp, Download, FileText } from "lucide-rea
 import { StatsCard } from "@/components/StatsCard";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useSubscription } from "@/contexts/SubscriptionContext";
-import { SubscriptionGuard } from "@/components/SubscriptionGuard";
 import { hasFeatureAccess } from "@/utils/subscriptionTiers";
 import AdvancedAnalytics from "@/components/analytics/AdvancedAnalytics";
 import UpgradeTable from "@/components/analytics/UpgradeTable";
@@ -185,16 +184,10 @@ export default function Analytics() {
                 <span>Download Excel</span>
               </Button>
             ) : (
-              <SubscriptionGuard
-                requiredFeature="hasAdvancedAnalytics"
-                fallbackTitle="Excel Export Requires Upgrade"
-                fallbackDescription="Excel downloads are available for Professional and Enterprise users only."
-              >
-                <Button disabled variant="outline" className="flex items-center space-x-2">
-                  <Download className="h-4 w-4" />
-                  <span>Download Excel</span>
-                </Button>
-              </SubscriptionGuard>
+              <Button disabled variant="outline" className="flex items-center space-x-2" title="Excel export requires Professional plan">
+                <Download className="h-4 w-4" />
+                <span>Download Excel</span>
+              </Button>
             )}
             
             {/* Report Download - Professional/Enterprise only */}
@@ -204,16 +197,10 @@ export default function Analytics() {
                 <span>Generate Report</span>
               </Button>
             ) : (
-              <SubscriptionGuard
-                requiredFeature="hasAdvancedAnalytics"
-                fallbackTitle="Advanced Reports Require Upgrade"
-                fallbackDescription="Detailed reports are available for Professional and Enterprise users only."
-              >
-                <Button disabled className="flex items-center space-x-2">
-                  <FileText className="h-4 w-4" />
-                  <span>Generate Report</span>
-                </Button>
-              </SubscriptionGuard>
+              <Button disabled className="flex items-center space-x-2" title="Advanced reports require Professional plan">
+                <FileText className="h-4 w-4" />
+                <span>Generate Report</span>
+              </Button>
             )}
           </div>
         </CardContent>
@@ -223,13 +210,7 @@ export default function Analytics() {
       {tier === 'freemium' && <UpgradeTable />}
 
       {/* Advanced Analytics - Professional/Enterprise Only */}
-      <SubscriptionGuard
-        requiredFeature="hasAdvancedAnalytics"
-        fallbackTitle="Advanced Analytics Available with Professional Plan"
-        fallbackDescription="Unlock real-time dashboards, funnel analysis, segmentation, and predictive analytics with our Professional or Enterprise plans."
-      >
-        <AdvancedAnalytics />
-      </SubscriptionGuard>
+      {hasFeatureAccess(tier, 'hasAdvancedAnalytics') && <AdvancedAnalytics />}
     </div>
   );
 }
