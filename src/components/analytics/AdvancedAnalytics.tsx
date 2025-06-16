@@ -1,160 +1,193 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
+  LineChart, 
+  Line, 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  Cell,
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
+import { 
+  Activity, 
   TrendingUp, 
   Users, 
   Calendar, 
-  MapPin, 
-  Target, 
-  Brain,
+  Clock, 
+  Target,
   AlertTriangle,
-  BarChart3,
-  PieChart,
-  Download
+  CheckCircle,
+  RefreshCw
 } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart as RechartsPieChart, Cell, FunnelChart, Funnel } from 'recharts';
 
 const realTimeData = [
-  { time: '09:00', checkIns: 45, registrations: 120 },
-  { time: '09:30', checkIns: 78, registrations: 135 },
-  { time: '10:00', checkIns: 120, registrations: 150 },
-  { time: '10:30', checkIns: 145, registrations: 160 },
+  { time: '10:00', checkIns: 45, expectedCheckIns: 50 },
+  { time: '10:15', checkIns: 78, expectedCheckIns: 80 },
+  { time: '10:30', checkIns: 120, expectedCheckIns: 110 },
+  { time: '10:45', checkIns: 156, expectedCheckIns: 140 },
+  { time: '11:00', checkIns: 189, expectedCheckIns: 170 },
 ];
 
 const funnelData = [
-  { stage: 'Event Views', value: 1000, color: '#8884d8' },
-  { stage: 'Registrations', value: 300, color: '#83a6ed' },
-  { stage: 'Check-ins', value: 240, color: '#8dd1e1' },
-  { stage: 'Engagement', value: 180, color: '#82ca9d' },
+  { stage: 'Registered', value: 300, percentage: 100 },
+  { stage: 'Confirmed', value: 250, percentage: 83 },
+  { stage: 'Checked In', value: 200, percentage: 67 },
+  { stage: 'Engaged', value: 150, percentage: 50 },
 ];
 
-const segmentData = [
-  { segment: '18-25', count: 45, percentage: 30 },
-  { segment: '26-35', count: 60, percentage: 40 },
-  { segment: '36-45', count: 30, percentage: 20 },
-  { segment: '46+', count: 15, percentage: 10 },
+const segmentationData = [
+  { name: 'First-time', value: 120, color: '#8884d8' },
+  { name: 'Returning', value: 80, color: '#82ca9d' },
+  { name: 'VIP', value: 40, color: '#ffc658' },
+  { name: 'Corporate', value: 60, color: '#ff7300' },
 ];
 
 const cohortData = [
-  { month: 'Jan', newAttendees: 120, returning: 80 },
-  { month: 'Feb', newAttendees: 150, returning: 90 },
-  { month: 'Mar', newAttendees: 180, returning: 110 },
-  { month: 'Apr', newAttendees: 160, returning: 140 },
+  { cohort: 'Jan 2024', week1: 100, week2: 85, week3: 70, week4: 60 },
+  { cohort: 'Feb 2024', week1: 120, week2: 100, week3: 85, week4: 75 },
+  { cohort: 'Mar 2024', week1: 150, week2: 130, week3: 110, week4: 95 },
+];
+
+const predictiveData = [
+  { month: 'Jan', actual: 240, predicted: 250 },
+  { month: 'Feb', actual: 280, predicted: 275 },
+  { month: 'Mar', actual: 320, predicted: 315 },
+  { month: 'Apr', actual: null, predicted: 350 },
+  { month: 'May', actual: null, predicted: 380 },
 ];
 
 const AdvancedAnalytics = () => {
-  const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
-  const [selectedSegment, setSelectedSegment] = useState('all');
-
-  const handleExportReport = (format: 'csv' | 'excel') => {
-    // TODO: Implement actual export functionality
-    console.log(`Exporting ${format} report...`);
-  };
+  const [isLiveMode, setIsLiveMode] = useState(true);
+  const [alertsEnabled, setAlertsEnabled] = useState(true);
 
   return (
     <div className="space-y-6">
-      {/* Real-time Dashboard Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Advanced Analytics</h2>
-          <p className="text-gray-600">Real-time insights and predictive analytics</p>
+          <p className="text-gray-600">Professional insights for data-driven decisions</p>
         </div>
-        <div className="flex items-center space-x-3">
-          <Badge variant="secondary" className="bg-green-100 text-green-800">
-            Live Data
-          </Badge>
-          <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1d">Last 24h</SelectItem>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-              <SelectItem value="30d">Last 30 days</SelectItem>
-              <SelectItem value="90d">Last 90 days</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <div className={`h-3 w-3 rounded-full ${isLiveMode ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+            <span className="text-sm text-gray-600">
+              {isLiveMode ? 'Live Mode' : 'Historical Mode'}
+            </span>
+          </div>
+          <Button
+            onClick={() => setIsLiveMode(!isLiveMode)}
+            variant="outline"
+            size="sm"
+            className="flex items-center space-x-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            <span>Toggle Mode</span>
+          </Button>
         </div>
       </div>
 
       {/* Real-time Alerts */}
-      <Card className="border-orange-200 bg-orange-50">
-        <CardContent className="p-4">
-          <div className="flex items-center space-x-3">
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
-            <div>
-              <h4 className="font-medium text-orange-800">Real-time Alert</h4>
-              <p className="text-sm text-orange-700">Check-in rate is 15% below expected for this time. Consider sending reminder notifications.</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {alertsEnabled && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <div>
+                  <h4 className="font-medium text-green-800">Check-in Rate Above Target</h4>
+                  <p className="text-sm text-green-600">89% check-in rate (Target: 85%)</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-l-4 border-l-amber-500">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                <div>
+                  <h4 className="font-medium text-amber-800">Slow Check-in Detected</h4>
+                  <p className="text-sm text-amber-600">Consider opening additional registration desk</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Tabs defaultValue="realtime" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="realtime">Real-time</TabsTrigger>
+          <TabsTrigger value="realtime">Real-Time</TabsTrigger>
           <TabsTrigger value="funnel">Funnel Analysis</TabsTrigger>
           <TabsTrigger value="segmentation">Segmentation</TabsTrigger>
           <TabsTrigger value="cohort">Cohort Analysis</TabsTrigger>
           <TabsTrigger value="predictive">Predictive</TabsTrigger>
         </TabsList>
 
-        {/* Real-time Dashboard */}
-        <TabsContent value="realtime">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Real-Time Dashboard */}
+        <TabsContent value="realtime" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Live Check-ins</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">145</div>
-                <p className="text-xs text-green-600">+12% from last hour</p>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Activity className="h-5 w-5 text-blue-600" />
+                  <span className="text-sm font-medium">Live Check-ins</span>
+                </div>
+                <div className="text-2xl font-bold">189</div>
+                <div className="flex items-center space-x-1 text-sm">
+                  <TrendingUp className="h-3 w-3 text-green-600" />
+                  <span className="text-green-600">+12% vs expected</span>
+                </div>
               </CardContent>
             </Card>
-            
+
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Check-in Rate</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">72%</div>
-                <p className="text-xs text-red-600">-3% from expected</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Avg. Check-in Time</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Clock className="h-5 w-5 text-purple-600" />
+                  <span className="text-sm font-medium">Avg Check-in Time</span>
+                </div>
                 <div className="text-2xl font-bold">2.3m</div>
-                <p className="text-xs text-green-600">-30s improvement</p>
+                <div className="text-sm text-gray-600">Per attendee</div>
               </CardContent>
             </Card>
-            
+
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Peak Hour</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">10:30 AM</div>
-                <p className="text-xs text-muted-foreground">Next: 2:00 PM</p>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Target className="h-5 w-5 text-orange-600" />
+                  <span className="text-sm font-medium">Check-in Rate</span>
+                </div>
+                <div className="text-2xl font-bold">89%</div>
+                <div className="text-sm text-green-600">Above target</div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Users className="h-5 w-5 text-indigo-600" />
+                  <span className="text-sm font-medium">Active Now</span>
+                </div>
+                <div className="text-2xl font-bold">156</div>
+                <div className="text-sm text-gray-600">In venue</div>
               </CardContent>
             </Card>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle>Real-time Check-in Trends</CardTitle>
+              <CardTitle>Real-Time Check-in Trends</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -164,8 +197,21 @@ const AdvancedAnalytics = () => {
                     <XAxis dataKey="time" />
                     <YAxis />
                     <Tooltip />
-                    <Line type="monotone" dataKey="checkIns" stroke="#8884d8" strokeWidth={2} name="Check-ins" />
-                    <Line type="monotone" dataKey="registrations" stroke="#82ca9d" strokeWidth={2} name="Registrations" />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="checkIns" 
+                      stroke="#2563eb" 
+                      strokeWidth={3}
+                      name="Actual Check-ins"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="expectedCheckIns" 
+                      stroke="#9ca3af" 
+                      strokeDasharray="5 5"
+                      name="Expected Check-ins"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -174,55 +220,79 @@ const AdvancedAnalytics = () => {
         </TabsContent>
 
         {/* Funnel Analysis */}
-        <TabsContent value="funnel">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="funnel" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Attendee Journey Funnel</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {funnelData.map((stage, index) => (
+                  <div key={stage.stage} className="flex items-center space-x-4">
+                    <div className="w-24 text-sm font-medium">{stage.stage}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-600">{stage.value} attendees</span>
+                        <span className="text-sm font-medium">{stage.percentage}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <div 
+                          className="bg-blue-600 h-3 rounded-full transition-all duration-300" 
+                          style={{ width: `${stage.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                    {index > 0 && (
+                      <div className="w-16 text-sm text-red-600">
+                        -{funnelData[index-1].value - stage.value}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Conversion Funnel</CardTitle>
+                <CardTitle>Drop-off Analysis</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {funnelData.map((stage, index) => (
-                    <div key={stage.stage} className="flex items-center space-x-4">
-                      <div className="w-24 text-sm font-medium">{stage.stage}</div>
-                      <div className="flex-1">
-                        <div className="w-full bg-gray-200 rounded-full h-4">
-                          <div 
-                            className="h-4 rounded-full" 
-                            style={{ 
-                              width: `${(stage.value / funnelData[0].value) * 100}%`,
-                              backgroundColor: stage.color 
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div className="w-16 text-sm font-bold">{stage.value}</div>
-                      {index > 0 && (
-                        <div className="w-12 text-xs text-gray-500">
-                          {Math.round((stage.value / funnelData[index - 1].value) * 100)}%
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+                    <span className="text-sm">Registration → Confirmation</span>
+                    <Badge variant="destructive">17% drop-off</Badge>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
+                    <span className="text-sm">Confirmation → Check-in</span>
+                    <Badge className="bg-amber-500">20% drop-off</Badge>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                    <span className="text-sm">Check-in → Engagement</span>
+                    <Badge className="bg-orange-500">25% drop-off</Badge>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Drop-off Analysis</CardTitle>
+                <CardTitle>Optimization Recommendations</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 bg-red-50 rounded-lg">
-                    <h4 className="font-medium text-red-800">Highest Drop-off</h4>
-                    <p className="text-sm text-red-600">Registration → Check-in: 20% drop-off</p>
-                    <p className="text-xs text-red-500 mt-1">Recommendation: Send check-in reminders 1 hour before event</p>
+                <div className="space-y-3">
+                  <div className="p-3 border-l-4 border-l-blue-500 bg-blue-50">
+                    <h4 className="font-medium text-blue-900">Send Reminder Emails</h4>
+                    <p className="text-sm text-blue-700">Reduce confirmation drop-off by 8-12%</p>
                   </div>
-                  <div className="p-4 bg-yellow-50 rounded-lg">
-                    <h4 className="font-medium text-yellow-800">Moderate Drop-off</h4>
-                    <p className="text-sm text-yellow-600">Check-in → Engagement: 25% drop-off</p>
-                    <p className="text-xs text-yellow-500 mt-1">Recommendation: Improve welcome experience and signage</p>
+                  <div className="p-3 border-l-4 border-l-green-500 bg-green-50">
+                    <h4 className="font-medium text-green-900">Streamline Check-in</h4>
+                    <p className="text-sm text-green-700">QR codes can improve check-in by 15%</p>
+                  </div>
+                  <div className="p-3 border-l-4 border-l-purple-500 bg-purple-50">
+                    <h4 className="font-medium text-purple-900">Gamify Experience</h4>
+                    <p className="text-sm text-purple-700">Increase engagement by 20%</p>
                   </div>
                 </div>
               </CardContent>
@@ -231,30 +301,32 @@ const AdvancedAnalytics = () => {
         </TabsContent>
 
         {/* Segmentation */}
-        <TabsContent value="segmentation">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="segmentation" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Age Demographics</CardTitle>
+                <CardTitle>Attendee Segments</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
+                    <PieChart>
                       <Pie
-                        dataKey="count"
-                        data={segmentData}
+                        data={segmentationData}
                         cx="50%"
                         cy="50%"
+                        labelLine={false}
+                        label={({name, percent}) => `${name} ${(percent * 100).toFixed(0)}%`}
                         outerRadius={80}
-                        label={({ segment, percentage }) => `${segment}: ${percentage}%`}
+                        fill="#8884d8"
+                        dataKey="value"
                       >
-                        {segmentData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={`hsl(${index * 90}, 70%, 60%)`} />
+                        {segmentationData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
                       <Tooltip />
-                    </RechartsPieChart>
+                    </PieChart>
                   </ResponsiveContainer>
                 </div>
               </CardContent>
@@ -262,19 +334,24 @@ const AdvancedAnalytics = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Engagement by Segment</CardTitle>
+                <CardTitle>Segment Performance</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {segmentData.map((segment) => (
-                    <div key={segment.segment} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{segment.segment} years</h4>
-                        <p className="text-sm text-gray-600">{segment.count} attendees</p>
+                  {segmentationData.map((segment) => (
+                    <div key={segment.name} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: segment.color }}
+                        />
+                        <span className="font-medium">{segment.name}</span>
                       </div>
                       <div className="text-right">
-                        <div className="text-lg font-bold">{segment.percentage}%</div>
-                        <p className="text-xs text-gray-500">of total</p>
+                        <div className="font-bold">{segment.value}</div>
+                        <div className="text-sm text-gray-600">
+                          {((segment.value / 300) * 100).toFixed(1)}% of total
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -285,65 +362,85 @@ const AdvancedAnalytics = () => {
         </TabsContent>
 
         {/* Cohort Analysis */}
-        <TabsContent value="cohort">
+        <TabsContent value="cohort" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Attendee Retention Analysis</CardTitle>
+              <CardTitle>Cohort Retention Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] mb-4">
+              <div className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={cohortData}>
+                  <LineChart data={cohortData}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
+                    <XAxis dataKey="cohort" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="newAttendees" fill="#8884d8" name="New Attendees" />
-                    <Bar dataKey="returning" fill="#82ca9d" name="Returning Attendees" />
-                  </BarChart>
+                    <Legend />
+                    <Line type="monotone" dataKey="week1" stroke="#8884d8" name="Week 1" />
+                    <Line type="monotone" dataKey="week2" stroke="#82ca9d" name="Week 2" />
+                    <Line type="monotone" dataKey="week3" stroke="#ffc658" name="Week 3" />
+                    <Line type="monotone" dataKey="week4" stroke="#ff7300" name="Week 4" />
+                  </LineChart>
                 </ResponsiveContainer>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-800">Retention Rate</h4>
-                  <p className="text-2xl font-bold text-blue-900">68%</p>
-                  <p className="text-sm text-blue-600">Average across all events</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-medium text-green-800">Growth Rate</h4>
-                  <p className="text-2xl font-bold text-green-900">+15%</p>
-                  <p className="text-sm text-green-600">Month-over-month</p>
-                </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Predictive Analytics */}
-        <TabsContent value="predictive">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="predictive" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Attendance Forecasting</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={predictiveData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="actual" 
+                      stroke="#2563eb" 
+                      strokeWidth={3}
+                      name="Actual Attendance"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="predicted" 
+                      stroke="#dc2626" 
+                      strokeDasharray="5 5"
+                      strokeWidth={2}
+                      name="Predicted Attendance"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Brain className="h-5 w-5" />
-                  <span>Attendance Forecast</span>
-                </CardTitle>
+                <CardTitle>Forecasting Insights</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-blue-800">Next Event Prediction</h4>
-                    <p className="text-2xl font-bold text-blue-900">285 attendees</p>
-                    <p className="text-sm text-blue-600">Confidence: 87%</p>
+                    <h4 className="font-medium text-blue-900">Growth Trend</h4>
+                    <p className="text-sm text-blue-700">Expected 15% increase in April attendance</p>
                   </div>
-                  <div className="space-y-2">
-                    <h5 className="font-medium">Influencing Factors:</h5>
-                    <ul className="text-sm space-y-1">
-                      <li>• Historical attendance pattern (+15%)</li>
-                      <li>• Day of week effect (+8%)</li>
-                      <li>• Weather forecast (-3%)</li>
-                      <li>• Marketing campaign reach (+12%)</li>
-                    </ul>
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <h4 className="font-medium text-green-900">Seasonal Pattern</h4>
+                    <p className="text-sm text-green-700">Spring events show 20% higher attendance</p>
+                  </div>
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <h4 className="font-medium text-purple-900">Confidence Level</h4>
+                    <p className="text-sm text-purple-700">87% accuracy based on historical data</p>
                   </div>
                 </div>
               </CardContent>
@@ -351,21 +448,21 @@ const AdvancedAnalytics = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>AI Recommendations</CardTitle>
+                <CardTitle>Actionable Recommendations</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="p-4 border-l-4 border-green-500 bg-green-50">
-                    <h4 className="font-medium text-green-800">Capacity Optimization</h4>
-                    <p className="text-sm text-green-700">Increase venue capacity by 20% based on predicted demand</p>
+                <div className="space-y-3">
+                  <div className="p-3 border-l-4 border-l-blue-500 bg-blue-50">
+                    <h4 className="font-medium text-blue-900">Increase Capacity</h4>
+                    <p className="text-sm text-blue-700">Consider larger venue for May event</p>
                   </div>
-                  <div className="p-4 border-l-4 border-blue-500 bg-blue-50">
-                    <h4 className="font-medium text-blue-800">Marketing Timing</h4>
-                    <p className="text-sm text-blue-700">Send final reminder 2 days before event for optimal check-in rates</p>
+                  <div className="p-3 border-l-4 border-l-green-500 bg-green-50">
+                    <h4 className="font-medium text-green-900">Staff Planning</h4>
+                    <p className="text-sm text-green-700">Add 2 more registration staff for April</p>
                   </div>
-                  <div className="p-4 border-l-4 border-yellow-500 bg-yellow-50">
-                    <h4 className="font-medium text-yellow-800">Resource Allocation</h4>
-                    <p className="text-sm text-yellow-700">Deploy 3 additional check-in stations during peak hours (10-11 AM)</p>
+                  <div className="p-3 border-l-4 border-l-orange-500 bg-orange-50">
+                    <h4 className="font-medium text-orange-900">Marketing Budget</h4>
+                    <p className="text-sm text-orange-700">Increase by 25% to meet demand</p>
                   </div>
                 </div>
               </CardContent>
@@ -373,25 +470,6 @@ const AdvancedAnalytics = () => {
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Export Options */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Export Advanced Reports</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex space-x-4">
-            <Button onClick={() => handleExportReport('csv')} variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </Button>
-            <Button onClick={() => handleExportReport('excel')} variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Export Excel
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Calendar, CheckCircle, ExternalLink, Sync, AlertCircle } from 'lucide-react';
+import { Calendar, CheckCircle, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface CalendarProvider {
@@ -106,7 +106,7 @@ const CalendarSync = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Sync className="h-5 w-5" />
+            <RefreshCw className="h-5 w-5" />
             <span>Sync Settings</span>
           </CardTitle>
         </CardHeader>
@@ -124,7 +124,7 @@ const CalendarSync = () => {
           
           <div className="flex items-center space-x-4">
             <Button onClick={handleSyncNow} variant="outline" className="flex items-center space-x-2">
-              <Sync className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4" />
               <span>Sync Now</span>
             </Button>
             <div className="text-sm text-gray-500">
