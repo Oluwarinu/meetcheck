@@ -9,6 +9,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { SubscriptionGuard } from "@/components/SubscriptionGuard";
 import { hasFeatureAccess } from "@/utils/subscriptionTiers";
 import AdvancedAnalytics from "@/components/analytics/AdvancedAnalytics";
+import UpgradeTable from "@/components/analytics/UpgradeTable";
 import { useToast } from "@/hooks/use-toast";
 
 const attendanceData = [
@@ -217,6 +218,9 @@ export default function Analytics() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Upgrade Features Table for Freemium Users */}
+      {tier === 'freemium' && <UpgradeTable />}
 
       {/* Advanced Analytics - Professional/Enterprise Only */}
       <SubscriptionGuard
