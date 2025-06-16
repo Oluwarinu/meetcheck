@@ -30,6 +30,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useSubscription } from '@/contexts/SubscriptionContext';
 import { tierLimits, tierPricing, SubscriptionTier } from '@/utils/subscriptionTiers';
+import CalendarSync from '@/components/calendar/CalendarSync';
+import { SubscriptionGuard } from '@/components/SubscriptionGuard';
 
 const Settings = () => {
   const { toast } = useToast();
@@ -113,7 +115,7 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="subscription" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="subscription" className="flex items-center space-x-2">
             <CreditCard className="h-4 w-4" />
             <span>Subscription</span>
@@ -121,6 +123,10 @@ const Settings = () => {
           <TabsTrigger value="profile" className="flex items-center space-x-2">
             <User className="h-4 w-4" />
             <span>Profile</span>
+          </TabsTrigger>
+          <TabsTrigger value="calendar" className="flex items-center space-x-2">
+            <Calendar className="h-4 w-4" />
+            <span>Calendar</span>
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center space-x-2">
             <Lock className="h-4 w-4" />
@@ -415,6 +421,17 @@ const Settings = () => {
               </Button>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Calendar Tab - Professional/Enterprise Only */}
+        <TabsContent value="calendar" className="space-y-6">
+          <SubscriptionGuard
+            requiredFeature="hasCalendarSync"
+            fallbackTitle="Calendar Sync Available with Professional Plan"
+            fallbackDescription="Sync your events with Google Calendar, Outlook, and other popular calendar applications with our Professional or Enterprise plans."
+          >
+            <CalendarSync />
+          </SubscriptionGuard>
         </TabsContent>
 
         {/* Security Tab */}

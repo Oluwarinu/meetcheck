@@ -1,9 +1,15 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Clock, Users, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Clock, Users, TrendingUp, Download, FileText } from "lucide-react";
 import { StatsCard } from "@/components/StatsCard";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { SubscriptionGuard } from "@/components/SubscriptionGuard";
+import { hasFeatureAccess } from "@/utils/subscriptionTiers";
+import AdvancedAnalytics from "@/components/analytics/AdvancedAnalytics";
+import { useToast } from "@/hooks/use-toast";
 
 const attendanceData = [
   { week: 'Week 1', attendance: 180 },
@@ -37,6 +43,33 @@ const sessionData = [
 ];
 
 export default function Analytics() {
+  const { tier } = useSubscription();
+  const { toast } = useToast();
+
+  const handleDownloadCSV = () => {
+    // TODO: Implement actual CSV download
+    toast({
+      title: "Downloading CSV",
+      description: "Your CSV report is being generated and will download shortly.",
+    });
+  };
+
+  const handleDownloadExcel = () => {
+    // TODO: Implement actual Excel download
+    toast({
+      title: "Downloading Excel Report",
+      description: "Your Excel report is being generated and will download shortly.",
+    });
+  };
+
+  const handleDownloadReport = () => {
+    // TODO: Implement actual report download
+    toast({
+      title: "Downloading Report",
+      description: "Your detailed report is being generated and will download shortly.",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -69,6 +102,7 @@ export default function Analytics() {
         />
       </div>
 
+      {/* Basic Analytics - Available to all tiers */}
       <Card>
         <CardHeader>
           <CardTitle>Attendance Trends</CardTitle>
@@ -126,7 +160,7 @@ export default function Analytics() {
                             style={{ width: `${session.checkInRate}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm">{session.checkInRate}</span>
+                        <span className="text-sm">{session.checkInRate}%</span>
                       </div>
                     </td>
                   </tr>
@@ -135,12 +169,63 @@ export default function Analytics() {
             </table>
           </div>
           
+          {/* Download Options with Tier Restrictions */}
           <div className="flex gap-2 mt-4">
-            <button className="px-4 py-2 text-sm border rounded">Export Report</button>
-            <button className="px-4 py-2 text-sm bg-meetcheck-blue text-white rounded">Download CSV</button>
+            {/* CSV Download - Available to all tiers */}
+            <Button onClick={handleDownloadCSV} variant="outline" className="flex items-center space-x-2">
+              <Download className="h-4 w-4" />
+              <span>Download CSV</span>
+            </Button>
+            
+            {/* Excel Download - Professional/Enterprise only */}
+            {hasFeatureAccess(tier, 'hasAdvancedAnalytics') ? (
+              <Button onClick={handleDownloadExcel} variant="outline" className="flex items-center space-x-2">
+                <Download className="h-4 w-4" />
+                <span>Download Excel</span>
+              </Button>
+            ) : (
+              <SubscriptionGuard
+                requiredFeature="hasAdvancedAnalytics"
+                fallbackTitle="Excel Export Requires Upgrade"
+                fallbackDescription="Excel downloads are available for Professional and Enterprise users only."
+              >
+                <Button disabled variant="outline" className="flex items-center space-x-2">
+                  <Download className="h-4 w-4" />
+                  <span>Download Excel</span>
+                </Button>
+              </SubscriptionGuard>
+            )}
+            
+            {/* Report Download - Professional/Enterprise only */}
+            {hasFeatureAccess(tier, 'hasAdvancedAnalytics') ? (
+              <Button onClick={handleDownloadReport} className="flex items-center space-x-2">
+                <FileText className="h-4 w-4" />
+                <span>Generate Report</span>
+              </Button>
+            ) : (
+              <SubscriptionGuard
+                requiredFeature="hasAdvancedAnalytics"
+                fallbackTitle="Advanced Reports Require Upgrade"
+                fallbackDescription="Detailed reports are available for Professional and Enterprise users only."
+              >
+                <Button disabled className="flex items-center space-x-2">
+                  <FileText className="h-4 w-4" />
+                  <span>Generate Report</span>
+                </Button>
+              </SubscriptionGuard>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Advanced Analytics - Professional/Enterprise Only */}
+      <SubscriptionGuard
+        requiredFeature="hasAdvancedAnalytics"
+        fallbackTitle="Advanced Analytics Available with Professional Plan"
+        fallbackDescription="Unlock real-time dashboards, funnel analysis, segmentation, and predictive analytics with our Professional or Enterprise plans."
+      >
+        <AdvancedAnalytics />
+      </SubscriptionGuard>
     </div>
   );
 }
