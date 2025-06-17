@@ -3,13 +3,16 @@ import { useState, useEffect } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, Download, Users } from "lucide-react";
+import { Share2, Download, Users, Copy, Link as LinkIcon } from "lucide-react";
 import QRCode from "qrcode";
+import { useToast } from "@/hooks/use-toast";
 
 export default function QRCodePage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [checkInUrl, setCheckInUrl] = useState<string>("");
   const location = useLocation();
   const { id: eventId } = useParams();
+  const { toast } = useToast();
   
   const eventData = location.state?.eventData;
 
@@ -17,10 +20,11 @@ export default function QRCodePage() {
     const generateQRCode = async () => {
       try {
         // Create check-in URL that would be used by attendees
-        const checkInUrl = `${window.location.origin}/check-in?eventId=${eventId}`;
+        const url = `${window.location.origin}/check-in?eventId=${eventId}`;
+        setCheckInUrl(url);
         
         // Generate QR code as data URL
-        const qrDataUrl = await QRCode.toDataURL(checkInUrl, {
+        const qrDataUrl = await QRCode.toDataURL(url, {
           width: 300,
           margin: 2,
           color: {
@@ -51,6 +55,23 @@ export default function QRCodePage() {
     }
   };
 
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(checkInUrl);
+      toast({
+        title: "Link copied!",
+        description: "Check-in link has been copied to clipboard.",
+      });
+    } catch (error) {
+      console.error('Error copying link:', error);
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy link to clipboard.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleShare = async () => {
     if (navigator.share && qrCodeUrl) {
       try {
@@ -67,25 +88,22 @@ export default function QRCodePage() {
       } catch (error) {
         console.error('Error sharing QR code:', error);
         // Fallback: copy URL to clipboard
-        const checkInUrl = `${window.location.origin}/check-in?eventId=${eventId}`;
-        navigator.clipboard.writeText(checkInUrl);
-        alert('Check-in URL copied to clipboard!');
+        handleCopyLink();
       }
     } else {
       // Fallback for browsers that don't support Web Share API
-      const checkInUrl = `${window.location.origin}/check-in?eventId=${eventId}`;
-      navigator.clipboard.writeText(checkInUrl);
-      alert('Check-in URL copied to clipboard!');
+      handleCopyLink();
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold mb-2">Event QR Code</h1>
-        <p className="text-muted-foreground">Share this QR code with attendees for easy check-in.</p>
+        <h1 className="text-2xl font-bold mb-2">Event Check-In Options</h1>
+        <p className="text-muted-foreground">Share these options with attendees for easy check-in.</p>
       </div>
 
+      {/* QR Code Section */}
       <Card className="bg-teal-600 text-white border-0">
         <CardContent className="flex flex-col items-center justify-center py-16">
           <div className="bg-white p-8 rounded-lg shadow-lg">
@@ -109,6 +127,34 @@ export default function QRCodePage() {
                 </div>
               )}
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Check-in Link Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LinkIcon className="h-5 w-5" />
+            Alternative Check-in Link
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            For attendees who can't scan QR codes, share this direct link:
+          </p>
+          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+            <code className="flex-1 text-sm font-mono break-all">
+              {checkInUrl}
+            </code>
+            <Button 
+              onClick={handleCopyLink}
+              size="sm"
+              variant="outline"
+              className="shrink-0"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -141,6 +187,14 @@ export default function QRCodePage() {
             <Download className="h-4 w-4" />
             Download QR Code
           </Button>
+          <Button 
+            variant="outline"
+            onClick={handleCopyLink}
+            className="flex items-center gap-2"
+          >
+            <Copy className="h-4 w-4" />
+            Copy Link
+          </Button>
         </div>
 
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
@@ -148,7 +202,7 @@ export default function QRCodePage() {
             <strong>Event Status:</strong> Active
           </p>
           <p className="text-xs text-blue-600 mt-1">
-            Check-in URL: {`${window.location.origin}/check-in?eventId=${eventId}`}
+            Both QR code and direct link lead to the same check-in page
           </p>
         </div>
       </div>

@@ -169,26 +169,17 @@ export default function Analytics() {
             </table>
           </div>
           
-          {/* Download Options with Tier Restrictions */}
+          {/* Download Options - Excel now available to all users */}
           <div className="flex gap-2 mt-4">
-            {/* CSV Download - Available to all tiers */}
             <Button onClick={handleDownloadCSV} variant="outline" className="flex items-center space-x-2">
               <Download className="h-4 w-4" />
               <span>Download CSV</span>
             </Button>
             
-            {/* Excel Download - Professional/Enterprise only */}
-            {hasFeatureAccess(tier, 'hasAdvancedAnalytics') ? (
-              <Button onClick={handleDownloadExcel} variant="outline" className="flex items-center space-x-2">
-                <Download className="h-4 w-4" />
-                <span>Download Excel</span>
-              </Button>
-            ) : (
-              <Button disabled variant="outline" className="flex items-center space-x-2" title="Excel export requires Professional plan">
-                <Download className="h-4 w-4" />
-                <span>Download Excel</span>
-              </Button>
-            )}
+            <Button onClick={handleDownloadExcel} variant="outline" className="flex items-center space-x-2">
+              <Download className="h-4 w-4" />
+              <span>Download Excel</span>
+            </Button>
             
             {/* Report Download - Professional/Enterprise only */}
             {hasFeatureAccess(tier, 'hasAdvancedAnalytics') ? (

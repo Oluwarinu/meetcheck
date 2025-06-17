@@ -16,11 +16,6 @@ interface UpgradeFeature {
 
 const upgradeFeatures: UpgradeFeature[] = [
   {
-    featureName: 'Excel Export',
-    description: 'Download reports in Excel format for advanced data analysis',
-    requiredPlan: 'Professional'
-  },
-  {
     featureName: 'Advanced Reports',
     description: 'Access detailed event analytics with custom metrics',
     requiredPlan: 'Professional'
