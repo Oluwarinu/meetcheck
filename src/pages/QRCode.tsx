@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,11 +41,10 @@ export default function QRCode() {
       
       setCheckInLink(checkInUrl);
 
-      // Generate QR code with error correction
+      // Generate QR code with correct options
       const qrDataUrl = await QRCodeLib.toDataURL(checkInUrl, {
         errorCorrectionLevel: 'M',
         type: 'image/png',
-        quality: 0.92,
         margin: 1,
         color: {
           dark: '#1f2937',
