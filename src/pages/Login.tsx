@@ -1,31 +1,102 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Eye, EyeOff } from "lucide-react";
+import { CheckCircle, Eye, EyeOff, Shield } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { validateEmail, sanitizeInput, generateCSRFToken } from "@/utils/security";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [csrfToken] = useState(() => generateCSRFToken());
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    // Email validation
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login form submitted:", formData);
-    // Navigate to dashboard after login
-    navigate("/dashboard");
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      // Simulate API call with proper error handling
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log("Login form submitted:", {
+        email: sanitizeInput(formData.email),
+        csrf: csrfToken,
+        timestamp: new Date().toISOString()
+      });
+
+      toast({
+        title: "Login Successful",
+        description: "Welcome back to MeetCheck!",
+      });
+
+      // Navigate to dashboard after successful login
+      navigate("/dashboard");
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const sanitizedValue = sanitizeInput(value);
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: sanitizedValue,
     });
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ""
+      });
+    }
   };
 
   return (
@@ -45,9 +116,15 @@ export default function Login() {
             <CardDescription className="text-gray-600">
               Sign in to your account to continue
             </CardDescription>
+            <div className="flex items-center justify-center gap-1 text-xs text-green-600 mt-2">
+              <Shield className="h-3 w-3" />
+              <span>Secure login</span>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <input type="hidden" name="csrf_token" value={csrfToken} />
+              
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                   Email address
@@ -59,9 +136,16 @@ export default function Login() {
                   required
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                  className={`h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${
+                    errors.email ? 'border-red-500' : ''
+                  }`}
                   placeholder="Enter your email"
+                  disabled={isLoading}
+                  autoComplete="email"
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-600">{errors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -76,17 +160,25 @@ export default function Login() {
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10"
+                    className={`h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 pr-10 ${
+                      errors.password ? 'border-red-500' : ''
+                    }`}
                     placeholder="Enter your password"
+                    disabled={isLoading}
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    disabled={isLoading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-sm text-red-600">{errors.password}</p>
+                )}
               </div>
 
               <div className="flex items-center justify-between">
@@ -96,6 +188,7 @@ export default function Login() {
                     name="remember-me"
                     type="checkbox"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    disabled={isLoading}
                   />
                   <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                     Remember me
@@ -112,8 +205,9 @@ export default function Login() {
               <Button
                 type="submit"
                 className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                disabled={isLoading}
               >
-                Sign in
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
 

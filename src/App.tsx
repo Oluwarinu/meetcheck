@@ -9,6 +9,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import HomePage from "./pages/HomePage";
 import Index from "./pages/Index";
 import Events from "./pages/Events";
@@ -26,52 +27,73 @@ import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error && typeof error === 'object' && 'status' in error) {
+          const status = (error as any).status;
+          if (status >= 400 && status < 500) {
+            return false;
+          }
+        }
+        return failureCount < 3;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <SubscriptionProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <PWAInstallPrompt />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/resources" element={<Resources />} />
-            <Route path="/upgrade" element={<Upgrade />} />
-            <Route path="/dashboard" element={<DashboardLayout><Index /></DashboardLayout>} />
-            <Route path="/events" element={<DashboardLayout><Events /></DashboardLayout>} />
-            <Route path="/create-event" element={<DashboardLayout><CreateEvent /></DashboardLayout>} />
-            <Route path="/events/:id/qr" element={<DashboardLayout><QRCode /></DashboardLayout>} />
-            <Route path="/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
-            <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
-            <Route path="/templates" element={<DashboardLayout><Templates /></DashboardLayout>} />
-            <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </SubscriptionProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <SubscriptionProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <PWAInstallPrompt />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/pricing" element={<Pricing />} />
+              <Route path="/resources" element={<Resources />} />
+              <Route path="/upgrade" element={<Upgrade />} />
+              <Route path="/dashboard" element={<DashboardLayout><Index /></DashboardLayout>} />
+              <Route path="/events" element={<DashboardLayout><Events /></DashboardLayout>} />
+              <Route path="/create-event" element={<DashboardLayout><CreateEvent /></DashboardLayout>} />
+              <Route path="/events/:id/qr" element={<DashboardLayout><QRCode /></DashboardLayout>} />
+              <Route path="/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
+              <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
+              <Route path="/templates" element={<DashboardLayout><Templates /></DashboardLayout>} />
+              <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </SubscriptionProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 const DashboardLayout = ({ children }: { children?: React.ReactNode }) => (
-  <SidebarProvider>
-    <div className="min-h-screen flex w-full">
-      <AppSidebar />
-      <main className="flex-1 p-6">
-        <div className="mb-4">
-          <SidebarTrigger />
-        </div>
-        {children}
-      </main>
-    </div>
-  </SidebarProvider>
+  <ErrorBoundary>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <main className="flex-1 p-6">
+          <div className="mb-4">
+            <SidebarTrigger />
+          </div>
+          {children}
+        </main>
+      </div>
+    </SidebarProvider>
+  </ErrorBoundary>
 );
 
 export default App;

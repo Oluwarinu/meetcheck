@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, X, FileImage } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { validateImageFile, sanitizeInput } from "@/utils/security";
 
 interface FlierUploadStepProps {
   flierData: string | null;
@@ -14,40 +15,90 @@ interface FlierUploadStepProps {
 
 export function FlierUploadStep({ flierData, onFlierUpdate }: FlierUploadStepProps) {
   const [dragActive, setDragActive] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
-  const handleFileUpload = (file: File) => {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+  const handleFileUpload = async (file: File) => {
+    setIsProcessing(true);
+    
+    try {
+      // Validate file
+      const validation = validateImageFile(file);
+      if (!validation.valid) {
+        toast({
+          title: "Invalid File",
+          description: validation.error,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Additional security check: verify file header
+      const buffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(buffer);
+      
+      // Check for common image file signatures
+      const isValidImage = 
+        (uint8Array[0] === 0xFF && uint8Array[1] === 0xD8) || // JPEG
+        (uint8Array[0] === 0x89 && uint8Array[1] === 0x50) || // PNG
+        (uint8Array[0] === 0x47 && uint8Array[1] === 0x49) || // GIF
+        (uint8Array[8] === 0x57 && uint8Array[9] === 0x45);   // WebP
+
+      if (!isValidImage) {
+        toast({
+          title: "Invalid File",
+          description: "File does not appear to be a valid image",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Convert to base64 safely
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const base64String = e.target?.result as string;
+          
+          // Validate base64 string
+          if (!base64String.startsWith('data:image/')) {
+            throw new Error('Invalid image data');
+          }
+          
+          onFlierUpdate(base64String);
+          toast({
+            title: "Flier Uploaded",
+            description: "Your event flier has been uploaded successfully",
+          });
+        } catch (error) {
+          console.error('Error processing image:', error);
+          toast({
+            title: "Upload Error",
+            description: "Failed to process the image file",
+            variant: "destructive"
+          });
+        }
+      };
+      
+      reader.onerror = () => {
+        toast({
+          title: "Upload Error",
+          description: "Failed to read the image file",
+          variant: "destructive"
+        });
+      };
+      
+      reader.readAsDataURL(file);
+      
+    } catch (error) {
+      console.error('File upload error:', error);
       toast({
-        title: "Invalid File Type",
-        description: "Please upload an image file (PNG, JPG, JPEG, GIF)",
+        title: "Upload Error",
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setIsProcessing(false);
     }
-
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File Too Large",
-        description: "Please upload an image smaller than 5MB",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Convert to base64
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64String = e.target?.result as string;
-      onFlierUpdate(base64String);
-      toast({
-        title: "Flier Uploaded",
-        description: "Your event flier has been uploaded successfully",
-      });
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -112,23 +163,29 @@ export function FlierUploadStep({ flierData, onFlierUpdate }: FlierUploadStepPro
               Drag and drop your flier here, or click to browse
             </p>
             <p className="text-xs text-muted-foreground mb-4">
-              Supports PNG, JPG, JPEG, GIF • Max size 5MB
+              Supports PNG, JPG, JPEG, GIF, WebP • Max size 5MB
             </p>
             <div className="space-y-2">
               <Label htmlFor="flier-upload" className="cursor-pointer">
-                <Button variant="outline" className="flex items-center gap-2" asChild>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-2" 
+                  asChild
+                  disabled={isProcessing}
+                >
                   <span>
                     <FileImage className="h-4 w-4" />
-                    Choose File
+                    {isProcessing ? 'Processing...' : 'Choose File'}
                   </span>
                 </Button>
               </Label>
               <Input
                 id="flier-upload"
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
                 onChange={handleInputChange}
                 className="hidden"
+                disabled={isProcessing}
               />
             </div>
           </CardContent>
@@ -151,8 +208,13 @@ export function FlierUploadStep({ flierData, onFlierUpdate }: FlierUploadStepPro
             <div className="relative">
               <img 
                 src={flierData} 
-                alt="Event Flier" 
+                alt="Event Flier Preview" 
                 className="w-full max-h-96 object-contain rounded-lg border"
+                onError={(e) => {
+                  console.error('Image failed to load');
+                  e.currentTarget.style.display = 'none';
+                }}
+                loading="lazy"
               />
             </div>
             <p className="text-sm text-muted-foreground mt-2 text-center">

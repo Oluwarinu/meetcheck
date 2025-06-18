@@ -1,210 +1,290 @@
 
 import { useState, useEffect } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Share2, Download, Users, Copy, Link as LinkIcon } from "lucide-react";
-import QRCode from "qrcode";
+import { QrCode, Download, Share2, Copy, Link as LinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { validateEventId, sanitizeInput } from "@/utils/security";
+import QRCodeLib from "qrcode";
 
-export default function QRCodePage() {
-  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
-  const [checkInUrl, setCheckInUrl] = useState<string>("");
-  const location = useLocation();
-  const { id: eventId } = useParams();
+export default function QRCode() {
+  const { id } = useParams();
   const { toast } = useToast();
-  
-  const eventData = location.state?.eventData;
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [checkInLink, setCheckInLink] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Validate event ID
+  const isValidEventId = id && validateEventId(id);
 
   useEffect(() => {
-    const generateQRCode = async () => {
-      try {
-        // Create check-in URL that would be used by attendees
-        const url = `${window.location.origin}/check-in?eventId=${eventId}`;
-        setCheckInUrl(url);
-        
-        // Generate QR code as data URL
-        const qrDataUrl = await QRCode.toDataURL(url, {
-          width: 300,
-          margin: 2,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          }
-        });
-        
-        setQrCodeUrl(qrDataUrl);
-      } catch (error) {
-        console.error('Error generating QR code:', error);
-      }
-    };
-
-    if (eventId) {
-      generateQRCode();
+    if (!isValidEventId) {
+      toast({
+        title: "Invalid Event",
+        description: "The event ID is invalid or missing.",
+        variant: "destructive"
+      });
+      return;
     }
-  }, [eventId]);
 
-  const handleDownload = () => {
-    if (qrCodeUrl) {
-      const link = document.createElement('a');
-      link.href = qrCodeUrl;
-      link.download = `${eventData?.title || 'Event'}-QR-Code.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    generateQRCode();
+  }, [id, isValidEventId]);
+
+  const generateQRCode = async () => {
+    if (!id || !isValidEventId) return;
+
+    setIsGenerating(true);
+    try {
+      const sanitizedId = sanitizeInput(id);
+      const baseUrl = window.location.origin;
+      const checkInUrl = `${baseUrl}/check-in?event=${encodeURIComponent(sanitizedId)}`;
+      
+      setCheckInLink(checkInUrl);
+
+      // Generate QR code with error correction
+      const qrDataUrl = await QRCodeLib.toDataURL(checkInUrl, {
+        errorCorrectionLevel: 'M',
+        type: 'image/png',
+        quality: 0.92,
+        margin: 1,
+        color: {
+          dark: '#1f2937',
+          light: '#ffffff'
+        },
+        width: 256
+      });
+
+      setQrCodeUrl(qrDataUrl);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      toast({
+        title: "Generation Error",
+        description: "Failed to generate QR code. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
-  const handleCopyLink = async () => {
+  const downloadQRCode = () => {
+    if (!qrCodeUrl) return;
+
     try {
-      await navigator.clipboard.writeText(checkInUrl);
+      const link = document.createElement('a');
+      link.download = `meetcheck-event-${sanitizeInput(id || 'unknown')}-qr.png`;
+      link.href = qrCodeUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
       toast({
-        title: "Link copied!",
-        description: "Check-in link has been copied to clipboard.",
+        title: "QR Code Downloaded",
+        description: "QR code has been saved to your device.",
       });
     } catch (error) {
-      console.error('Error copying link:', error);
+      console.error('Download error:', error);
       toast({
-        title: "Copy failed",
-        description: "Unable to copy link to clipboard.",
+        title: "Download Failed",
+        description: "Could not download QR code. Please try again.",
         variant: "destructive"
       });
     }
   };
 
-  const handleShare = async () => {
-    if (navigator.share && qrCodeUrl) {
+  const copyLink = async () => {
+    if (!checkInLink) return;
+
+    try {
+      await navigator.clipboard.writeText(checkInLink);
+      toast({
+        title: "Link Copied",
+        description: "Check-in link has been copied to clipboard.",
+      });
+    } catch (error) {
+      console.error('Copy error:', error);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = checkInLink;
+      document.body.appendChild(textArea);
+      textArea.select();
       try {
-        // Convert data URL to blob for sharing
-        const response = await fetch(qrCodeUrl);
-        const blob = await response.blob();
-        const file = new File([blob], `${eventData?.title || 'Event'}-QR-Code.png`, { type: 'image/png' });
-        
-        await navigator.share({
-          title: `${eventData?.title || 'Event'} QR Code`,
-          text: 'Scan this QR code to check in to the event',
-          files: [file]
+        document.execCommand('copy');
+        toast({
+          title: "Link Copied",
+          description: "Check-in link has been copied to clipboard.",
         });
-      } catch (error) {
-        console.error('Error sharing QR code:', error);
-        // Fallback: copy URL to clipboard
-        handleCopyLink();
+      } catch (fallbackError) {
+        toast({
+          title: "Copy Failed",
+          description: "Could not copy link. Please copy manually.",
+          variant: "destructive"
+        });
+      } finally {
+        document.body.removeChild(textArea);
       }
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      handleCopyLink();
     }
   };
 
-  return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-2">Event Check-In Options</h1>
-        <p className="text-muted-foreground">Share these options with attendees for easy check-in.</p>
-      </div>
+  const shareQRCode = async () => {
+    if (!checkInLink) return;
 
-      {/* QR Code Section */}
-      <Card className="bg-teal-600 text-white border-0">
-        <CardContent className="flex flex-col items-center justify-center py-16">
-          <div className="bg-white p-8 rounded-lg shadow-lg">
-            <div className="w-72 h-72 bg-gray-200 rounded-lg flex items-center justify-center">
-              {qrCodeUrl ? (
-                <div className="text-center">
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'MeetCheck Event Check-in',
+          text: 'Join our event using this check-in link',
+          url: checkInLink,
+        });
+      } else {
+        // Fallback to copying
+        await copyLink();
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name !== 'AbortError') {
+        console.error('Share error:', error);
+        toast({
+          title: "Share Failed",
+          description: "Could not share the link. Link copied instead.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  if (!isValidEventId) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="p-6 text-center">
+            <p className="text-red-600">Invalid or missing event ID</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Event QR Code</h1>
+          <p className="text-gray-600">
+            Share this QR code or link with participants for easy check-in
+          </p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* QR Code Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                QR Code
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-center">
+                {isGenerating ? (
+                  <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : qrCodeUrl ? (
                   <img 
                     src={qrCodeUrl} 
                     alt="Event QR Code" 
-                    className="w-64 h-64 mx-auto mb-4"
+                    className="w-64 h-64 border rounded-lg"
                   />
-                  <div className="text-black">
-                    <h3 className="font-bold">MeetCheck Check In</h3>
-                    <p className="text-xs">Scan this QR code to check in</p>
+                ) : (
+                  <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <QrCode className="h-16 w-16 text-gray-400" />
                   </div>
+                )}
+              </div>
+              
+              <div className="flex gap-2">
+                <Button 
+                  onClick={downloadQRCode} 
+                  disabled={!qrCodeUrl || isGenerating}
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={shareQRCode}
+                  disabled={!checkInLink || isGenerating}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Check-in Link Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <LinkIcon className="h-5 w-5" />
+                Direct Check-in Link
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-2">
+                  For participants who can't scan QR codes
+                </p>
+                <div className="p-3 bg-gray-50 rounded-lg border">
+                  <code className="text-sm break-all text-gray-800">
+                    {checkInLink || "Generating..."}
+                  </code>
                 </div>
-              ) : (
-                <div className="text-center text-gray-500">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-                  <p>Generating QR Code...</p>
-                </div>
-              )}
+              </div>
+              
+              <Button 
+                onClick={copyLink} 
+                disabled={!checkInLink || isGenerating}
+                className="w-full"
+                variant="outline"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                Copy Link
+              </Button>
+
+              <div className="text-xs text-gray-500 space-y-1">
+                <p>• Share this link via email, SMS, or messaging apps</p>
+                <p>• Participants click the link to check-in directly</p>
+                <p>• Works on any device with internet access</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mt-6">
+          <CardContent className="p-6">
+            <h3 className="font-semibold mb-3">How to use:</h3>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div>
+                <h4 className="font-medium text-sm mb-1">QR Code Method:</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>1. Download and print the QR code</li>
+                  <li>2. Display it at your event entrance</li>
+                  <li>3. Participants scan with their phone camera</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium text-sm mb-1">Direct Link Method:</h4>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li>1. Copy the check-in link</li>
+                  <li>2. Share via email, SMS, or social media</li>
+                  <li>3. Participants click to check-in directly</li>
+                </ul>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Check-in Link Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LinkIcon className="h-5 w-5" />
-            Alternative Check-in Link
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
-            For attendees who can't scan QR codes, share this direct link:
-          </p>
-          <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-            <code className="flex-1 text-sm font-mono break-all">
-              {checkInUrl}
-            </code>
-            <Button 
-              onClick={handleCopyLink}
-              size="sm"
-              variant="outline"
-              className="shrink-0"
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="text-center">
-        <h2 className="text-xl font-bold mb-2">{eventData?.title || 'Event'}</h2>
-        <p className="text-muted-foreground mb-4">
-          {eventData?.date && eventData?.time ? 
-            `${eventData.date}, ${eventData.time}` : 
-            'Date and time to be announced'
-          } | {eventData?.location || 'Location to be announced'}
-        </p>
-        
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <Users className="h-4 w-4" />
-          <span className="font-semibold">0</span>
-          <span className="text-muted-foreground">Attendees Checked In</span>
-        </div>
-
-        <div className="flex gap-3 justify-center">
-          <Button variant="outline" className="flex items-center gap-2" onClick={handleShare}>
-            <Share2 className="h-4 w-4" />
-            Share QR Code
-          </Button>
-          <Button 
-            className="bg-meetcheck-blue hover:bg-blue-600 flex items-center gap-2"
-            onClick={handleDownload}
-            disabled={!qrCodeUrl}
-          >
-            <Download className="h-4 w-4" />
-            Download QR Code
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={handleCopyLink}
-            className="flex items-center gap-2"
-          >
-            <Copy className="h-4 w-4" />
-            Copy Link
-          </Button>
-        </div>
-
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Event Status:</strong> Active
-          </p>
-          <p className="text-xs text-blue-600 mt-1">
-            Both QR code and direct link lead to the same check-in page
-          </p>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
