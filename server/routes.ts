@@ -203,6 +203,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         location_data,
         ip_address
       });
+      
+      // Update event metrics after check-in
+      await storage.updateEventMetrics(req.params.id);
+      
       res.json(checkIn);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -210,29 +214,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Analytics route (migrated from Supabase Edge Function)
-  app.post('/api/events/:id/analytics', authenticateToken, async (req, res) => {
+  app.get('/api/events/:id/analytics', authenticateToken, async (req, res) => {
     try {
       const event = await storage.getEvent(req.params.id);
       if (!event || event.created_by !== req.user.id) {
         return res.status(403).json({ error: 'Access denied' });
       }
 
-      const checkIns = await storage.getEventCheckIns(req.params.id);
-      const participants = await storage.getEventParticipants(req.params.id);
+      // Update metrics first
+      await storage.updateEventMetrics(req.params.id);
       
-      const totalCheckIns = checkIns.length;
-      const uniqueParticipants = new Set(checkIns.map(c => c.participant_id)).size;
+      // Get updated metrics
+      const metrics = await storage.getEventMetrics(req.params.id);
       
-      // Basic analytics - can be extended based on requirements
-      const analytics = {
-        event_id: req.params.id,
-        total_check_ins: totalCheckIns,
-        unique_participants: uniqueParticipants,
-        total_registered: participants.length,
-        check_in_rate: participants.length > 0 ? (uniqueParticipants / participants.length) * 100 : 0
-      };
+      if (!metrics) {
+        return res.status(404).json({ error: 'Metrics not found' });
+      }
       
-      res.json(analytics);
+      res.json(metrics);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Event templates routes
+  app.get('/api/event-templates', async (req, res) => {
+    try {
+      const templates = await storage.getEventTemplates();
+      res.json(templates);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/event-templates', authenticateToken, async (req, res) => {
+    try {
+      const templateData = req.body;
+      const template = await storage.createEventTemplate(templateData);
+      res.json(template);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Subscription routes
+  app.get('/api/subscription', authenticateToken, async (req, res) => {
+    try {
+      let subscription = await storage.getUserSubscription(req.user.id);
+      
+      // Create default subscription if none exists
+      if (!subscription) {
+        subscription = await storage.createSubscription({
+          user_id: req.user.id,
+          tier: 'freemium',
+          status: 'active'
+        });
+      }
+      
+      res.json(subscription);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put('/api/subscription', authenticateToken, async (req, res) => {
+    try {
+      const updates = req.body;
+      const subscription = await storage.updateSubscription(req.user.id, updates);
+      res.json(subscription);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Notification preferences routes
+  app.get('/api/notification-preferences', authenticateToken, async (req, res) => {
+    try {
+      const preferences = await storage.getNotificationPreferences(req.user.id);
+      res.json(preferences);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put('/api/notification-preferences', authenticateToken, async (req, res) => {
+    try {
+      const preferences = req.body;
+      const updated = await storage.updateNotificationPreferences(req.user.id, preferences);
+      res.json(updated);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

@@ -75,7 +75,19 @@ export default function CreateEvent() {
       setCurrentStep(currentStep + 1);
     } else {
       try {
-        const eventData = await apiClient.createEvent(formData);
+        // Transform the form data to match backend schema
+        const eventPayload = {
+          title: formData.title,
+          description: formData.description,
+          date: formData.date,
+          time: formData.time,
+          location: formData.location,
+          capacity: formData.capacity ? parseInt(formData.capacity) : null,
+          participant_fields: formData.participantFields,
+          flier_data: formData.flierData
+        };
+        
+        const eventData = await apiClient.createEvent(eventPayload);
         navigate(`/events/${eventData.id}/qr`, {
           state: {
             eventData,
