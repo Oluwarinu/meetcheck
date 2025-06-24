@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { MapPin, Clock, Globe, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface LocationData {
   latitude: number;
@@ -45,6 +47,14 @@ export default function CheckIn() {
     flierData?: string | null;
   } | null>(null);
   const { toast } = useToast();
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login');
+    }
+  }, [user, loading, navigate]);
 
   // Get user's IP address
   useEffect(() => {

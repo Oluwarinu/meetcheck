@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle, ArrowLeft, Mail, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { validateEmail, sanitizeInput, generateCSRFToken } from "@/utils/security";
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ForgotPassword() {
   const { toast } = useToast();
@@ -16,50 +16,12 @@ export default function ForgotPassword() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [csrfToken] = useState(() => generateCSRFToken());
+  const { resetPassword, loading, error: authError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-
-    // Validate email
-    if (!email) {
-      setError("Email is required");
-      return;
-    }
-
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log("Password reset requested for:", {
-        email: sanitizeInput(email),
-        csrf: csrfToken,
-        timestamp: new Date().toISOString()
-      });
-
-      setIsSubmitted(true);
-      toast({
-        title: "Reset Link Sent",
-        description: "Check your email for password reset instructions.",
-      });
-
-    } catch (error) {
-      console.error('Password reset error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send reset email. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await resetPassword(email);
+    setIsSubmitted(true);
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {

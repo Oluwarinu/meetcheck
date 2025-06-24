@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle, Eye, EyeOff, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { validateEmail, sanitizeInput, generateCSRFToken } from "@/utils/security";
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,6 +20,7 @@ export default function Login() {
     password: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const { login, loading, error } = useAuth();
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -44,37 +45,22 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       return;
     }
-
     setIsLoading(true);
-    
     try {
-      // Simulate API call with proper error handling
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log("Login form submitted:", {
-        email: sanitizeInput(formData.email),
-        csrf: csrfToken,
-        timestamp: new Date().toISOString()
-      });
-
+      await login(formData.email, formData.password);
       toast({
-        title: "Login Successful",
-        description: "Welcome back to MeetCheck!",
+        title: 'Login Successful',
+        description: 'Welcome back to MeetCheck!',
       });
-
-      // Navigate to dashboard after successful login
-      navigate("/dashboard");
-      
-    } catch (error) {
-      console.error('Login error:', error);
+      navigate('/dashboard');
+    } catch (err) {
       toast({
-        title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
-        variant: "destructive"
+        title: 'Login Failed',
+        description: error || 'Invalid credentials. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Eye, EyeOff, Check } from "lucide-react";
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -18,11 +19,16 @@ export default function Signup() {
     confirmPassword: "",
     agreeToTerms: false,
   });
+  const { signup, loading, error } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Signup form submitted:", formData);
-    navigate("/dashboard");
+    if (!formData.email || !formData.password || formData.password !== formData.confirmPassword) {
+      alert('Please fill all fields and ensure passwords match.');
+      return;
+    }
+    await signup(formData.email, formData.password, formData.firstName + ' ' + formData.lastName);
+    navigate('/dashboard');
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

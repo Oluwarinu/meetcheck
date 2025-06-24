@@ -3,5 +3,13 @@ $headers = @{
   "Content-Type" = "application/json"
 }
 
-$response = Invoke-RestMethod -Uri "https://nvldyuuxhjzxjwdftav.functions.supabase.co/attendance-aggregation" -Method Post -Headers $headers -Body (Get-Content -Raw -Path .\body.json)
-$response | ConvertTo-Json -Depth 10 
+try {
+  $response = Invoke-RestMethod -Uri "https://bdmwxjrwdejjunlisgsp.functions.supabase.co/attendance-aggregation" -Method Post -Headers $headers -Body (Get-Content -Raw -Path .\body.json)
+  $response | ConvertTo-Json -Depth 10
+} catch {
+  Write-Host "StatusCode:" $_.Exception.Response.StatusCode.value__
+  Write-Host "StatusDescription:" $_.Exception.Response.StatusDescription
+  $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+  $body = $reader.ReadToEnd()
+  Write-Host "Response body:`n$body"
+} 

@@ -32,17 +32,21 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 import { tierLimits, tierPricing, SubscriptionTier } from '@/utils/subscriptionTiers';
 import CalendarSync from '@/components/calendar/CalendarSync';
 import { SubscriptionGuard } from '@/components/SubscriptionGuard';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../supabase';
 
 const Settings = () => {
   const { toast } = useToast();
   const { tier, currentMonthEvents } = useSubscription();
+  const { profile, updateProfile, loading: authLoading, error: authError, refreshProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   const [userProfile, setUserProfile] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@company.com',
-    phone: '+1 (555) 123-4567',
+    firstName: profile?.full_name?.split(' ')[0] || '',
+    lastName: profile?.full_name?.split(' ')[1] || '',
+    email: profile?.email || '',
+    phone: profile?.phone || '',
+    avatar_url: profile?.avatar_url || '',
     company: 'TechCorp Solutions',
     position: 'Event Manager',
     address: '123 Business Ave, Suite 100',
@@ -59,13 +63,17 @@ const Settings = () => {
 
   const handleSaveProfile = async () => {
     setIsLoading(true);
-    setTimeout(() => {
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been saved successfully.",
-      });
-      setIsLoading(false);
-    }, 1000);
+    await updateProfile({
+      full_name: userProfile.firstName + ' ' + userProfile.lastName,
+      phone: userProfile.phone,
+      avatar_url: userProfile.avatar_url,
+    });
+    await refreshProfile();
+    toast({
+      title: 'Profile updated',
+      description: 'Your profile information has been saved successfully.',
+    });
+    setIsLoading(false);
   };
 
   const handleChangePassword = async () => {
@@ -102,6 +110,20 @@ const Settings = () => {
   const usagePercentage = tierInfo.limits.maxEventsPerMonth 
     ? (currentMonthEvents / tierInfo.limits.maxEventsPerMonth) * 100 
     : 0;
+
+  // Add a connectivity test function
+  const testSupabaseConnection = async () => {
+    if (!profile?.id) {
+      toast({ title: 'Not logged in', description: 'You must be logged in to test connectivity.', variant: 'destructive' });
+      return;
+    }
+    const { data, error } = await supabase.from('user_profile').select('*').eq('id', profile.id).single();
+    if (error) {
+      toast({ title: 'Supabase Connection Failed', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Supabase Connection Successful', description: 'Fetched your profile from Supabase.' });
+    }
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -592,6 +614,9 @@ const Settings = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Add a button in the settings UI: */}
+      <Button onClick={testSupabaseConnection} className="mt-4">Test Supabase Connection</Button>
     </div>
   );
 };

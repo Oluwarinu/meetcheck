@@ -1,5 +1,3 @@
-
-import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -26,6 +24,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
+import { AuthProvider } from './contexts/AuthContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,33 +48,35 @@ const queryClient = new QueryClient({
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <SubscriptionProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <PWAInstallPrompt />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/resources" element={<Resources />} />
-              <Route path="/upgrade" element={<Upgrade />} />
-              <Route path="/dashboard" element={<DashboardLayout><Index /></DashboardLayout>} />
-              <Route path="/events" element={<DashboardLayout><Events /></DashboardLayout>} />
-              <Route path="/create-event" element={<DashboardLayout><CreateEvent /></DashboardLayout>} />
-              <Route path="/events/:id/qr" element={<DashboardLayout><QRCode /></DashboardLayout>} />
-              <Route path="/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
-              <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
-              <Route path="/templates" element={<DashboardLayout><Templates /></DashboardLayout>} />
-              <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </SubscriptionProvider>
+      <AuthProvider>
+        <SubscriptionProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <PWAInstallPrompt />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/resources" element={<Resources />} />
+                <Route path="/upgrade" element={<Upgrade />} />
+                <Route path="/dashboard" element={<DashboardLayout><Index /></DashboardLayout>} />
+                <Route path="/events" element={<DashboardLayout><Events /></DashboardLayout>} />
+                <Route path="/create-event" element={<DashboardLayout><CreateEvent /></DashboardLayout>} />
+                <Route path="/events/:id/qr" element={<DashboardLayout><QRCode /></DashboardLayout>} />
+                <Route path="/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
+                <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
+                <Route path="/templates" element={<DashboardLayout><Templates /></DashboardLayout>} />
+                <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </SubscriptionProvider>
+      </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );
