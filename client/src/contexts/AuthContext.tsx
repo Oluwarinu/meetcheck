@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../supabase';
+import { apiClient } from '../lib/api';
 
 interface UserProfile {
   id: string;
@@ -38,83 +38,71 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Session persistence
   useEffect(() => {
-    const getSession = async () => {
+    const initAuth = async () => {
       setLoading(true);
-      const { data, error } = await supabase.auth.getSession();
-      if (data?.session?.user) {
-        setUser(data.session.user);
-        await fetchProfile(data.session.user.id);
-      } else {
-        setUser(null);
-        setProfile(null);
+      const token = localStorage.getItem('auth_token');
+      if (token) {
+        try {
+          const userData = await apiClient.getProfile();
+          setUser(userData);
+          setProfile(userData);
+        } catch (err) {
+          // Token is invalid, clear it
+          apiClient.clearToken();
+          setUser(null);
+          setProfile(null);
+        }
       }
       setLoading(false);
     };
-    getSession();
-    // Listen for auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
-    });
-    return () => { listener?.subscription.unsubscribe(); };
+    initAuth();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase.from('user_profile').select('*').eq('id', userId).single();
-    if (error) {
-      setProfile(null);
-    } else {
-      setProfile(data);
-    }
-  };
-
   const refreshProfile = async () => {
-    if (user) await fetchProfile(user.id);
+    if (user) {
+      try {
+        const userData = await apiClient.getProfile();
+        setUser(userData);
+        setProfile(userData);
+      } catch (err) {
+        setError('Failed to refresh profile');
+      }
+    }
   };
 
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
+    try {
+      const response = await apiClient.login(email, password);
+      setUser(response.user);
+      setProfile(response.user);
       setLoading(false);
-      return;
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+      throw err;
     }
-    setUser(data.user);
-    await fetchProfile(data.user.id);
-    setLoading(false);
   };
 
   const signup = async (email: string, password: string, fullName: string) => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      setError(error.message);
+    try {
+      const response = await apiClient.signup(email, password, fullName);
+      setUser(response.user);
+      setProfile(response.user);
       setLoading(false);
-      return;
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+      throw err;
     }
-    if (data.user) {
-      await supabase.from('user_profile').insert({
-        id: data.user.id,
-        email,
-        full_name: fullName,
-      });
-      setUser(data.user);
-      await fetchProfile(data.user.id);
-    }
-    setLoading(false);
   };
 
   const logout = async () => {
     setLoading(true);
-    await supabase.auth.signOut();
+    await apiClient.logout();
     setUser(null);
     setProfile(null);
     setLoading(false);
@@ -123,18 +111,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) return;
     setLoading(true);
-    const { error } = await supabase.from('user_profile').update(updates).eq('id', user.id);
-    if (error) setError(error.message);
-    await fetchProfile(user.id);
-    setLoading(false);
+    try {
+      const updatedUser = await apiClient.updateProfile(updates);
+      setUser(updatedUser);
+      setProfile(updatedUser);
+      setLoading(false);
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+      throw err;
+    }
   };
 
   const resetPassword = async (email: string) => {
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) setError(error.message);
-    setLoading(false);
+    try {
+      await apiClient.resetPassword(email);
+      setLoading(false);
+    } catch (err: any) {
+      setError(err.message);
+      setLoading(false);
+      throw err;
+    }
   };
 
   return (
