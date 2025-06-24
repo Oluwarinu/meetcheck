@@ -1,92 +1,49 @@
-
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, ArrowRight } from "lucide-react";
+import { CheckCircle, Users, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function HeroSection() {
   return (
-    <section className="relative py-20 lg:py-32 overflow-hidden min-h-[80vh] flex items-center">
-      {/* Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/20 via-transparent to-transparent"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-indigo-100/20 via-transparent to-transparent"></div>
-      </div>
-      
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        {/* Floating Images */}
-        <div className="absolute top-8 left-8 lg:left-16 hidden lg:block">
-          <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
-            <img 
-              src="/lovable-uploads/18f6ae70-cfff-4d0c-8a00-4b0b09cc16ce.png" 
-              alt="Professional woman working with headphones"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        <div className="absolute top-8 right-8 lg:right-16 hidden lg:block">
-          <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
-            <img 
-              src="/lovable-uploads/ab1b618d-f283-41ad-84b8-ffbfae6be08f.png" 
-              alt="Professional businessman portrait"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 left-8 lg:left-16 hidden lg:block">
-          <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
-            <img 
-              src="/lovable-uploads/6378372e-b08d-41cb-ba5a-e19e6ac2835e.png" 
-              alt="Woman celebrating with phone"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        <div className="absolute bottom-8 right-8 lg:right-16 hidden lg:block">
-          <div className="w-24 h-24 lg:w-32 lg:h-32 rounded-full overflow-hidden shadow-xl border-4 border-white">
-            <img 
-              src="/lovable-uploads/1a0d85ca-5f1c-4c9f-aac2-05064b115483.png" 
-              alt="Man working with laptop outdoors"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-
-        {/* Centered Main Content */}
-        <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-5xl lg:text-7xl font-black text-gray-900 mb-6 leading-tight tracking-tight">
-            Automate Your
-            <span className="block text-blue-600">Attendance Tracking</span>
+    <section className="py-20 bg-gradient-to-br from-blue-50 to-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            Simplify Event
+            <span className="text-blue-600"> Attendance</span>
           </h1>
-          <p className="text-xl lg:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto font-medium leading-relaxed">
-            MeetCheck is the all-in-one solution for managing attendance at your events. Track attendance, gain insights, and streamline your event management process.
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            Track attendance effortlessly with QR codes, real-time analytics, and seamless check-ins. 
+            Perfect for events of any size.
           </p>
-          
-          {/* Primary CTA */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-6 text-xl font-semibold shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200">
-              <Link to="/signup" className="flex items-center">
-                Get Started Free
-                <ArrowRight className="ml-3 h-6 w-6" />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Button size="lg" asChild className="bg-blue-600 hover:bg-blue-700">
+              <Link to="/signup">
+                Start Free Trial
               </Link>
             </Button>
-            <Button variant="outline" size="lg" className="px-10 py-6 text-xl font-semibold border-2 border-gray-300 hover:border-blue-600 hover:text-blue-600 transition-all duration-200">
-              Watch Demo
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/pricing">
+                View Pricing
+              </Link>
             </Button>
           </div>
-
-          {/* Trust Indicators */}
-          <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span>Free to start</span>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="flex flex-col items-center">
+              <CheckCircle className="h-12 w-12 text-blue-600 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Easy Check-ins</h3>
+              <p className="text-gray-600">QR code scanning for instant attendance tracking</p>
             </div>
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-500" />
-              <span>No credit card required</span>
+            <div className="flex flex-col items-center">
+              <Users className="h-12 w-12 text-blue-600 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Real-time Analytics</h3>
+              <p className="text-gray-600">Live attendance data and comprehensive reports</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <Calendar className="h-12 w-12 text-blue-600 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Event Management</h3>
+              <p className="text-gray-600">Organize multiple events with ease</p>
             </div>
           </div>
         </div>

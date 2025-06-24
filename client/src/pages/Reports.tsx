@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export default function Settings() {
+export default function Reports() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -16,9 +16,9 @@ export default function Settings() {
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Settings</h1>
+            <h1 className="text-3xl font-bold">Reports</h1>
             <p className="text-muted-foreground">
-              Manage your account and application preferences
+              View detailed analytics and reports for your events
             </p>
           </div>
         </div>
@@ -26,13 +26,13 @@ export default function Settings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Account Settings</CardTitle>
+          <CardTitle>Event Reports</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            <p>Settings panel coming soon!</p>
+            <p>Reports feature coming soon!</p>
             <p className="text-sm mt-2">
-              We're working on comprehensive account and preference management.
+              We're working on comprehensive reporting features to help you analyze your event data.
             </p>
           </div>
         </CardContent>

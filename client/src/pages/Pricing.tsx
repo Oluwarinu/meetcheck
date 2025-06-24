@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, CheckCircle } from "lucide-react";
+import { Check, CheckCircle, Star, Zap, Shield } from "lucide-react";
 import { PaymentModal } from "@/components/PaymentModal";
 import { SUBSCRIPTION_PLANS, PaymentPlan } from "@/lib/paystack";
 import { useAuth } from "@/contexts/AuthContext";
@@ -178,6 +178,14 @@ export default function Pricing() {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        {/* FAQ Section */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="font-semibold mb-2">How does the pricing work for additional attendees?</h3>
               <p className="text-gray-600">
                 Every event includes 100 free attendees. If your event has more than 100 attendees, 
                 you'll be charged ₦1,000 for every additional 100 attendees (or any part thereof). 
@@ -200,7 +208,15 @@ export default function Pricing() {
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        selectedPlan={selectedPlan}
+        onSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 }

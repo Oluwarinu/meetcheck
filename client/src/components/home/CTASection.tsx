@@ -1,27 +1,29 @@
-
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function CTASection() {
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-6">
-          Ready to transform your event management?
+    <section className="py-20 bg-blue-600">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+          Ready to transform your events?
         </h2>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          Join thousands of event organizers who trust MeetCheck to streamline their attendance tracking and gain valuable insights.
+        <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          Join thousands of event organizers who trust MeetCheck for seamless attendance management.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
-            <Link to="/signup" className="flex items-center">
+          <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100" asChild>
+            <Link to="/signup">
               Get Started Free
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <ArrowRight className="h-4 w-4 ml-2" />
             </Link>
           </Button>
-          <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-2 border-gray-300 hover:border-blue-600 hover:text-blue-600 transition-all duration-200">
-            Schedule Demo
+          <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600" asChild>
+            <Link to="/pricing">
+              View Pricing
+            </Link>
           </Button>
         </div>
       </div>
