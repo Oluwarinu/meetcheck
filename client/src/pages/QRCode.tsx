@@ -37,7 +37,7 @@ export default function QRCode() {
     try {
       const sanitizedId = sanitizeInput(id);
       const baseUrl = window.location.origin;
-      const checkInUrl = `${baseUrl}/check-in?event=${encodeURIComponent(sanitizedId)}`;
+      const checkInUrl = `${baseUrl}/public/checkin/${encodeURIComponent(sanitizedId)}`;
       
       setCheckInLink(checkInUrl);
 

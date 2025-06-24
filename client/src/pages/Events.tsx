@@ -123,10 +123,25 @@ export default function Events() {
                         <TableCell className="text-muted-foreground">
                           {event.capacity ? `0/${event.capacity}` : "No limit"}
                         </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${event.checkin_enabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                            <span className="text-sm">
+                              {event.checkin_enabled ? 'Active' : 'Disabled'}
+                            </span>
+                          </div>
+                        </TableCell>
                         <TableCell className="text-center">
-                          <Button asChild variant="outline" size="sm" className="text-meetcheck-blue border-meetcheck-blue hover:bg-meetcheck-light-blue">
-                            <Link to={`/events/${event.id}/qr`}>View QR</Link>
-                          </Button>
+                          <div className="flex gap-2 justify-center">
+                            <Button asChild variant="outline" size="sm" className="text-meetcheck-blue border-meetcheck-blue hover:bg-meetcheck-light-blue">
+                              <Link to={`/events/${event.id}/qr`}>View QR</Link>
+                            </Button>
+                            <EventManagement 
+                              event={event}
+                              onEventUpdate={handleEventUpdate}
+                              onEventDelete={handleEventDelete}
+                            />
+                          </div>
                         </TableCell>
                       </TableRow>
                     );

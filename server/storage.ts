@@ -30,6 +30,7 @@ export interface IStorage {
   getEvent(id: string): Promise<Event | undefined>;
   createEvent(event: InsertEvent & { created_by: string }): Promise<Event>;
   updateEvent(id: string, updates: Partial<Event>): Promise<Event | undefined>;
+  deleteEvent(id: string): Promise<void>;
   
   // Event template operations
   getEventTemplates(): Promise<EventTemplate[]>;

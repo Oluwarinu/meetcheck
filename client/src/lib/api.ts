@@ -103,6 +103,19 @@ class ApiClient {
     return this.request<any>(`/events/${id}`);
   }
 
+  async updateEvent(id: string, updates: any) {
+    return this.request<any>(`/events/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteEvent(id: string) {
+    return this.request<any>(`/events/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Participant methods
   async getEventParticipants(eventId: string) {
     return this.request<any[]>(`/events/${eventId}/participants`);

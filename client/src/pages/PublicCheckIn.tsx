@@ -321,6 +321,18 @@ export default function PublicCheckIn() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-2xl mx-auto px-4">
+        {/* MeetCheck Logo */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <div className="bg-blue-600 p-3 rounded-xl mr-3">
+              <CheckCircle className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 cursor-pointer" onClick={() => navigate('/')}>
+              MeetCheck
+            </h1>
+          </div>
+        </div>
+
         <Card>
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-blue-900">{event.title}</CardTitle>
@@ -340,6 +352,29 @@ export default function PublicCheckIn() {
                 {event.location}
               </div>
             </div>
+
+            {/* QR Code Expiry Timer */}
+            {event.checkin_deadline && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex items-center justify-center text-yellow-800">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <span className="text-sm font-medium">
+                    Check-in closes: {new Date(event.checkin_deadline).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Event Flier */}
+            {event.flier_data && (
+              <div className="mt-4">
+                <img 
+                  src={event.flier_data} 
+                  alt="Event Flier" 
+                  className="w-full max-w-md mx-auto rounded-lg shadow-sm"
+                />
+              </div>
+            )}
           </CardHeader>
 
           <CardContent>

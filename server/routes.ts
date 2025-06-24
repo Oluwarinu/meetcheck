@@ -205,6 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         time: event.time,
         location: event.location,
         participant_fields: event.participant_fields,
+        flier_data: event.flier_data,
         checkin_enabled: event.checkin_enabled,
         checkin_deadline: event.checkin_deadline
       });
@@ -379,6 +380,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const preferences = req.body;
       const updated = await storage.updateNotificationPreferences(req.user.id, preferences);
       res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Event management routes
+  app.put('/api/events/:id', authenticateToken, async (req, res) => {
+    try {
+      const event = await storage.getEvent(req.params.id);
+      if (!event || event.created_by !== req.user.id) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      const updates = req.body;
+      const updatedEvent = await storage.updateEvent(req.params.id, updates);
+      res.json(updatedEvent);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete('/api/events/:id', authenticateToken, async (req, res) => {
+    try {
+      const event = await storage.getEvent(req.params.id);
+      if (!event || event.created_by !== req.user.id) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      await storage.deleteEvent(req.params.id);
+      res.json({ message: 'Event deleted successfully' });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
