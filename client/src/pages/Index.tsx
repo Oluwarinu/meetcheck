@@ -1,74 +1,29 @@
 
-import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Calendar, Users, TrendingUp, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { StatsCard } from "@/components/StatsCard";
 import { EventCard } from "@/components/EventCard";
-import { apiClient } from "@/lib/api";
+
+const recentEvents = [
+  {
+    id: "1",
+    name: "Tech Meetup",
+    date: "July 15, 2024",
+    status: "Upcoming" as const,
+    attendance: "0/50",
+  },
+  {
+    id: "2",
+    name: "Community Gathering",
+    date: "June 20, 2024",
+    status: "In Progress" as const,
+    attendance: "25/100",
+  }
+];
 
 export default function Index() {
-  const [stats, setStats] = useState({
-    totalEvents: 0,
-    totalAttendees: 0,
-    upcomingEvents: 0,
-    completedEvents: 0
-  });
-  const [recentEvents, setRecentEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const events = await apiClient.getEvents();
-        
-        // Calculate stats from real data
-        const now = new Date();
-        const upcoming = events.filter(event => new Date(event.date) > now);
-        const completed = events.filter(event => new Date(event.date) <= now);
-        
-        // Get total attendees from all events
-        let totalAttendees = 0;
-        for (const event of events) {
-          try {
-            const checkIns = await apiClient.getEventCheckIns(event.id);
-            totalAttendees += checkIns.length;
-          } catch (error) {
-            console.log('Could not fetch check-ins for event:', event.id);
-          }
-        }
-        
-        setStats({
-          totalEvents: events.length,
-          totalAttendees,
-          upcomingEvents: upcoming.length,
-          completedEvents: completed.length
-        });
-        
-        // Set recent events (last 5)
-        const recent = events
-          .sort((a, b) => new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime())
-          .slice(0, 5)
-          .map(event => ({
-            id: event.id,
-            name: event.title,
-            date: event.date,
-            attendees: 0, // Will be updated when we get check-ins
-            status: new Date(event.date) > now ? "Upcoming" : "Completed"
-          }));
-        
-        setRecentEvents(recent);
-      } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -87,41 +42,30 @@ export default function Index() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {loading ? (
-          <>
-            <div className="h-24 bg-gray-200 animate-pulse rounded-lg"></div>
-            <div className="h-24 bg-gray-200 animate-pulse rounded-lg"></div>
-            <div className="h-24 bg-gray-200 animate-pulse rounded-lg"></div>
-            <div className="h-24 bg-gray-200 animate-pulse rounded-lg"></div>
-          </>
-        ) : (
-          <>
-            <StatsCard
-              title="Total Events"
-              value={stats.totalEvents}
-              subtitle="All time"
-              icon={<Calendar className="h-4 w-4" />}
-            />
-            <StatsCard
-              title="Total Attendees"
-              value={stats.totalAttendees}
-              subtitle="All events"
-              icon={<Users className="h-4 w-4" />}
-            />
-            <StatsCard
-              title="Upcoming Events"
-              value={stats.upcomingEvents}
-              subtitle="This month"
-              icon={<TrendingUp className="h-4 w-4" />}
-            />
-            <StatsCard
-              title="Completed Events"
-              value={stats.completedEvents}
-              subtitle="This month"
-              icon={<Clock className="h-4 w-4" />}
-            />
-          </>
-        )}
+        <StatsCard
+          title="Total Events"
+          value="12"
+          subtitle="Active events"
+          icon={<Calendar className="h-4 w-4" />}
+        />
+        <StatsCard
+          title="Total Attendees"
+          value="1,234"
+          subtitle="All time"
+          icon={<Users className="h-4 w-4" />}
+        />
+        <StatsCard
+          title="Check-in Rate"
+          value="87%"
+          trend="+5% from last month"
+          icon={<TrendingUp className="h-4 w-4" />}
+        />
+        <StatsCard
+          title="Avg. Check-in Time"
+          value="2.3 min"
+          subtitle="Per attendee"
+          icon={<Clock className="h-4 w-4" />}
+        />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -130,27 +74,9 @@ export default function Index() {
             <CardTitle>Recent Events</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {loading ? (
-              <>
-                <div className="h-16 bg-gray-200 animate-pulse rounded-lg"></div>
-                <div className="h-16 bg-gray-200 animate-pulse rounded-lg"></div>
-                <div className="h-16 bg-gray-200 animate-pulse rounded-lg"></div>
-              </>
-            ) : recentEvents.length > 0 ? (
-              recentEvents.map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p>No events found. Create your first event to get started!</p>
-                <Button asChild className="mt-4">
-                  <Link to="/create-event">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Event
-                  </Link>
-                </Button>
-              </div>
-            )}
+            {recentEvents.map((event) => (
+              <EventCard key={event.id} event={event} />
+            ))}
             <Button asChild variant="outline" className="w-full">
               <Link to="/events">View All Events</Link>
             </Button>

@@ -1,34 +1,15 @@
 
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Check, CheckCircle, Star, Zap, Shield } from "lucide-react";
-import { PaymentModal } from "@/components/PaymentModal";
-import { SUBSCRIPTION_PLANS, PaymentPlan } from "@/lib/paystack";
-import { useAuth } from "@/contexts/AuthContext";
+import React from 'react';
+import Header from "@/components/home/Header";
+import Footer from "@/components/home/Footer";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Check, Star, Zap, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-export default function Pricing() {
-  const { user } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<PaymentPlan | null>(null);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-
-  const handleSelectPlan = (plan: PaymentPlan) => {
-    if (!user) {
-      // Redirect to login if not authenticated
-      window.location.href = '/login';
-      return;
-    }
-    
-    setSelectedPlan(plan);
-    setIsPaymentModalOpen(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    // Redirect to dashboard after successful payment
-    window.location.href = '/dashboard';
-  };
+const Pricing = () => {
+  const navigate = useNavigate();
 
   const tiers = [
     {
@@ -97,95 +78,102 @@ export default function Pricing() {
     }
   ];
 
-
+  const handleSubscribe = (tierId: string) => {
+    if (tierId === 'freemium') {
+      navigate('/signup');
+    } else if (tierId === 'enterprise') {
+      window.open('mailto:sales@meetcheck.com?subject=Enterprise%20Inquiry', '_blank');
+    } else {
+      navigate('/upgrade');
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-white">
+      <Header />
+      
+      <div className="max-w-7xl mx-auto py-12 px-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Link to="/" className="flex items-center space-x-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900">MeetCheck</span>
-          </Link>
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <Button asChild>
-                <Link to="/dashboard">Dashboard</Link>
-              </Button>
-            ) : (
-              <>
-                <Button variant="outline" asChild>
-                  <Link to="/login">Login</Link>
-                </Button>
-                <Button asChild>
-                  <Link to="/signup">Sign Up</Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Pricing Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Choose Your Plan
+            Choose the Perfect Plan for Your Events
           </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Select the perfect plan for your event management needs
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Scale your event management with flexible pricing that grows with your needs
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {SUBSCRIPTION_PLANS.map((plan, index) => (
-            <Card key={index} className={`relative ${plan.id === 'professional' ? 'border-blue-500 shadow-lg scale-105' : ''}`}>
-              {plan.id === 'professional' && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500">
+        {/* Usage-based pricing info */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+          <h3 className="text-lg font-semibold text-blue-900 mb-2">Usage-Based Add-On Pricing</h3>
+          <p className="text-blue-800">
+            Each event includes up to <strong>100 attendees free</strong>. For events with more than 100 attendees, 
+            an additional fee of <strong>₦1,000 per every 100 attendees</strong> (or fraction thereof) applies.
+          </p>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="grid md:grid-cols-3 gap-8 mb-12">
+          {tiers.map((tier) => (
+            <Card key={tier.id} className={`relative ${tier.popular ? 'border-blue-500 border-2' : ''}`}>
+              {tier.popular && (
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600">
                   Most Popular
                 </Badge>
               )}
-              <CardHeader>
-                <CardTitle className="text-xl">{plan.name}</CardTitle>
-                <CardDescription>{plan.description}</CardDescription>
-                <div className="mt-4">
-                  <span className="text-3xl font-bold">
-                    {new Intl.NumberFormat('en-NG', {
-                      style: 'currency',
-                      currency: 'NGN'
-                    }).format(plan.amount / 100)}
-                  </span>
-                  <span className="text-gray-600 ml-1">/{plan.interval}</span>
+              <CardHeader className="text-center">
+                <div className="flex justify-center mb-4">
+                  <div className={`p-3 rounded-full ${tier.popular ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                    {tier.icon}
+                  </div>
                 </div>
+                <CardTitle className="text-2xl">{tier.name}</CardTitle>
+                <div className="py-4">
+                  <span className="text-4xl font-bold">{tier.price}</span>
+                  {tier.period && <span className="text-gray-500">{tier.period}</span>}
+                </div>
+                <CardDescription>{tier.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-3 mb-6">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center">
-                      <Check className="h-4 w-4 text-green-500 mr-2" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
                 <Button 
-                  className={`w-full ${plan.id === 'professional' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-                  variant={plan.id === 'professional' ? 'default' : 'outline'}
-                  onClick={() => handleSelectPlan(plan)}
+                  className={`w-full mb-6 ${tier.popular ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                  onClick={() => handleSubscribe(tier.id)}
                 >
-                  {plan.id === "free" ? "Get Started" : "Choose Plan"}
+                  {tier.cta}
                 </Button>
+                
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-gray-900">Features included:</h4>
+                  {tier.features.map((feature, index) => (
+                    <div key={index} className="flex items-center space-x-3">
+                      <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </div>
+                  ))}
+                  
+                  {tier.limitations.length > 0 && (
+                    <div className="pt-4">
+                      <h4 className="font-semibold text-gray-600 text-sm">Limitations:</h4>
+                      {tier.limitations.map((limitation, index) => (
+                        <div key={index} className="flex items-center space-x-3 mt-2">
+                          <div className="h-1 w-1 bg-gray-400 rounded-full flex-shrink-0 ml-1.5" />
+                          <span className="text-xs text-gray-500">{limitation}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
         {/* FAQ Section */}
-        <div className="mt-16 max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="space-y-6">
             <div>
-              <h3 className="font-semibold mb-2">How does the pricing work for additional attendees?</h3>
+              <h3 className="font-semibold mb-2">How does the usage-based pricing work?</h3>
               <p className="text-gray-600">
                 Every event includes 100 free attendees. If your event has more than 100 attendees, 
                 you'll be charged ₦1,000 for every additional 100 attendees (or any part thereof). 
@@ -210,13 +198,9 @@ export default function Pricing() {
         </div>
       </div>
 
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        selectedPlan={selectedPlan}
-        onSuccess={handlePaymentSuccess}
-      />
+      <Footer />
     </div>
   );
-}
+};
+
+export default Pricing;
