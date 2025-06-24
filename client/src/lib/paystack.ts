@@ -44,7 +44,7 @@ export const SUBSCRIPTION_PLANS: PaymentPlan[] = [
     id: 'professional',
     name: 'Professional',
     description: 'For growing businesses',
-    amount: 500000, // ₦5,000 in kobo
+    amount: 1000000, // ₦10,000 in kobo
     interval: 'monthly',
     features: [
       'Up to 20 events per month',
@@ -60,7 +60,7 @@ export const SUBSCRIPTION_PLANS: PaymentPlan[] = [
     id: 'enterprise',
     name: 'Enterprise',
     description: 'For large organizations',
-    amount: 1500000, // ₦15,000 in kobo
+    amount: 2500000, // ₦25,000 in kobo
     interval: 'monthly',
     features: [
       'Unlimited events',

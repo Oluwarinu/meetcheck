@@ -146,6 +146,21 @@ class ApiClient {
       method: 'POST',
     });
   }
+
+  // Payment methods
+  async initializePayment(paymentData: any) {
+    return this.request<any>('/payments/initialize', {
+      method: 'POST',
+      body: JSON.stringify(paymentData),
+    });
+  }
+
+  async verifyPayment(reference: string) {
+    return this.request<any>('/payments/verify', {
+      method: 'POST',
+      body: JSON.stringify({ reference }),
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
