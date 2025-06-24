@@ -179,6 +179,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public event check-in (no auth required)
+  app.get('/api/public/events/:id', async (req, res) => {
+    try {
+      const event = await storage.getEvent(req.params.id);
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      // Check if check-in is still enabled and within deadline
+      if (!event.checkin_enabled) {
+        return res.status(403).json({ error: 'Check-in is disabled for this event' });
+      }
+
+      if (event.checkin_deadline && new Date() > new Date(event.checkin_deadline)) {
+        return res.status(403).json({ error: 'Check-in deadline has passed' });
+      }
+
+      // Return only public information
+      res.json({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        participant_fields: event.participant_fields,
+        checkin_enabled: event.checkin_enabled,
+        checkin_deadline: event.checkin_deadline
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/public/events/:id/checkin', async (req, res) => {
+    try {
+      const event = await storage.getEvent(req.params.id);
+      if (!event) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+
+      // Check if check-in is still enabled and within deadline
+      if (!event.checkin_enabled) {
+        return res.status(403).json({ error: 'Check-in is disabled for this event' });
+      }
+
+      if (event.checkin_deadline && new Date() > new Date(event.checkin_deadline)) {
+        return res.status(403).json({ error: 'Check-in deadline has passed' });
+      }
+
+      const { name, email, data, location_data, ip_address } = req.body;
+      
+      // Create participant first
+      const participant = await storage.createParticipant({
+        event_id: req.params.id,
+        name,
+        email,
+        data
+      });
+
+      // Then create check-in
+      const checkIn = await storage.createCheckIn({
+        event_id: req.params.id,
+        participant_id: participant.id,
+        location_data,
+        ip_address
+      });
+      
+      // Update event metrics after check-in
+      await storage.updateEventMetrics(req.params.id);
+      
+      res.json({ participant, checkIn, message: 'Successfully checked in!' });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Check-in routes
   app.get('/api/events/:id/checkins', authenticateToken, async (req, res) => {
     try {

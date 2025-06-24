@@ -227,10 +227,6 @@ export class PostgresStorage implements IStorage {
       return created;
     }
   }
-
-  async hashPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, 10);
-  }
 }
 
 export const storage = new PostgresStorage();

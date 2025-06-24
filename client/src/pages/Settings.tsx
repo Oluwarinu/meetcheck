@@ -615,7 +615,7 @@ const Settings = () => {
       </Tabs>
 
       {/* Add a button in the settings UI: */}
-      <Button onClick={testSupabaseConnection} className="mt-4">Test Supabase Connection</Button>
+      <Button onClick={testAPIConnection} className="mt-4">Test API Connection</Button>
     </div>
   );
 };

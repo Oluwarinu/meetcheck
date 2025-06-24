@@ -23,6 +23,8 @@ export const events = pgTable("events", {
   capacity: integer("capacity"),
   participant_fields: jsonb("participant_fields").notNull(),
   flier_data: text("flier_data"),
+  checkin_enabled: boolean("checkin_enabled").default(true),
+  checkin_deadline: timestamp("checkin_deadline"), // When QR code expires
   created_by: uuid("created_by").notNull().references(() => users.id),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
@@ -126,6 +128,8 @@ export const insertEventSchema = createInsertSchema(events).pick({
   capacity: true,
   participant_fields: true,
   flier_data: true,
+  checkin_enabled: true,
+  checkin_deadline: true,
 });
 
 export const insertParticipantSchema = createInsertSchema(participants).pick({

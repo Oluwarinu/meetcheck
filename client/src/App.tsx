@@ -14,6 +14,7 @@ import Events from "./pages/Events";
 import CreateEvent from "./pages/CreateEvent";
 import QRCode from "./pages/QRCode";
 import CheckIn from "./pages/CheckIn";
+import PublicCheckIn from "./pages/PublicCheckIn";
 import Analytics from "./pages/Analytics";
 import Settings from "./pages/Settings";
 import Templates from "./pages/Templates";
@@ -68,6 +69,7 @@ const App = () => (
                 <Route path="/create-event" element={<DashboardLayout><CreateEvent /></DashboardLayout>} />
                 <Route path="/events/:id/qr" element={<DashboardLayout><QRCode /></DashboardLayout>} />
                 <Route path="/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />
+                <Route path="/public/checkin/:eventId" element={<PublicCheckIn />} />
                 <Route path="/analytics" element={<DashboardLayout><Analytics /></DashboardLayout>} />
                 <Route path="/templates" element={<DashboardLayout><Templates /></DashboardLayout>} />
                 <Route path="/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />

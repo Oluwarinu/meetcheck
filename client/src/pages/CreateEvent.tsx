@@ -84,7 +84,9 @@ export default function CreateEvent() {
           location: formData.location,
           capacity: formData.capacity ? parseInt(formData.capacity) : null,
           participant_fields: formData.participantFields,
-          flier_data: formData.flierData
+          flier_data: formData.flierData,
+          checkin_enabled: true,
+          checkin_deadline: null // Event creator can set this later in settings
         };
         
         const eventData = await apiClient.createEvent(eventPayload);
