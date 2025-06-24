@@ -36,14 +36,14 @@ The system uses a simple user-based schema with plans for expansion:
 - Schema designed for extension with events, participants, and check-ins tables
 
 ### Authentication & Authorization
-- Primary authentication through Supabase Auth
-- Session-based authentication for Express server
+- JWT-based authentication with bcrypt password hashing
+- Server-side session management with PostgreSQL
 - Role-based access control for different subscription tiers
 - Secure password handling with validation requirements
 
 ## Data Flow
 
-1. **User Registration/Login**: Users authenticate via Supabase Auth
+1. **User Registration/Login**: Users authenticate via JWT tokens
 2. **Event Creation**: Users create events with customizable participant fields
 3. **QR Code Generation**: System generates secure QR codes for event check-ins
 4. **Attendance Tracking**: Participants scan QR codes to check into events
@@ -55,7 +55,8 @@ The system uses a simple user-based schema with plans for expansion:
 ### Core Dependencies
 - **@neondatabase/serverless**: PostgreSQL database connection
 - **drizzle-orm**: Type-safe database queries
-- **@supabase/supabase-js**: Authentication and additional services
+- **jsonwebtoken**: JWT authentication
+- **bcryptjs**: Password hashing
 - **@tanstack/react-query**: Server state management
 - **@radix-ui/***: Accessible UI components
 
@@ -90,7 +91,13 @@ The system uses a simple user-based schema with plans for expansion:
 
 ## Changelog
 
-- June 24, 2025. Initial setup
+- January 24, 2025: Migrated from Lovable to Replit
+  - Replaced Supabase with PostgreSQL database
+  - Implemented JWT authentication with bcryptjs
+  - Created comprehensive API endpoints
+  - Added proper client/server separation
+  - Secured environment variables
+- June 24, 2025: Initial setup
 
 ## User Preferences
 

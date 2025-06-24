@@ -8,6 +8,7 @@ import { MapPin, Clock, Globe, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { apiClient } from '@/lib/api';
 
 interface LocationData {
   latitude: number;
@@ -73,18 +74,21 @@ export default function CheckIn() {
     fetchIP();
   }, []);
 
-  // Get event data from URL parameters or localStorage
+  // Get event data from URL parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const eventId = urlParams.get('eventId');
+    const eventId = urlParams.get('event');
     
     if (eventId) {
-      // In a real app, you'd fetch from backend
-      // For now, we'll try to get from localStorage or use sample data
-      const storedEventData = localStorage.getItem(`event-${eventId}`);
-      if (storedEventData) {
-        setEventData(JSON.parse(storedEventData));
-      }
+      const fetchEventData = async () => {
+        try {
+          const event = await apiClient.getEvent(eventId);
+          setEventData(event);
+        } catch (error) {
+          console.error("Failed to fetch event data:", error);
+        }
+      };
+      fetchEventData();
     }
   }, []);
 

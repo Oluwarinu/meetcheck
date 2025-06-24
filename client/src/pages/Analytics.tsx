@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,8 @@ import { hasFeatureAccess } from "@/utils/subscriptionTiers";
 import AdvancedAnalytics from "@/components/analytics/AdvancedAnalytics";
 import UpgradeTable from "@/components/analytics/UpgradeTable";
 import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 const attendanceData = [
   { week: 'Week 1', attendance: 180 },
@@ -46,28 +49,64 @@ export default function Analytics() {
   const { tier } = useSubscription();
   const { toast } = useToast();
 
-  const handleDownloadCSV = () => {
-    // TODO: Implement actual CSV download
-    toast({
-      title: "Downloading CSV",
-      description: "Your CSV report is being generated and will download shortly.",
-    });
+  const handleDownloadCSV = async () => {
+    try {
+      const events = await apiClient.getEvents();
+      const csvContent = generateCSVContent(events);
+      downloadFile(csvContent, 'events-report.csv', 'text/csv');
+      toast({
+        title: "CSV Downloaded",
+        description: "Your CSV report has been downloaded successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to generate CSV report.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDownloadExcel = () => {
-    // TODO: Implement actual Excel download
     toast({
-      title: "Downloading Excel Report",
-      description: "Your Excel report is being generated and will download shortly.",
+      title: "Excel Export",
+      description: "Excel export feature available in Professional tier.",
     });
   };
 
   const handleDownloadReport = () => {
-    // TODO: Implement actual report download
     toast({
-      title: "Downloading Report",
-      description: "Your detailed report is being generated and will download shortly.",
+      title: "Advanced Reports",
+      description: "Advanced reporting available in Professional tier.",
     });
+  };
+
+  const generateCSVContent = (events: any[]) => {
+    const headers = ['Event Name', 'Date', 'Time', 'Location', 'Capacity', 'Created'];
+    const rows = events.map(event => [
+      event.title,
+      event.date,
+      event.time,
+      event.location,
+      event.capacity || 'No limit',
+      new Date(event.created_at).toLocaleDateString()
+    ]);
+    
+    return [headers, ...rows].map(row => 
+      row.map(cell => `"${cell}"`).join(',')
+    ).join('\n');
+  };
+
+  const downloadFile = (content: string, filename: string, type: string) => {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (

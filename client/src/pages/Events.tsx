@@ -1,57 +1,51 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const sampleEvents = [
-  {
-    id: "1",
-    name: "Tech Meetup",
-    date: "July 15, 2024",
-    status: "Upcoming" as const,
-    attendance: "0/50",
-  },
-  {
-    id: "2",
-    name: "Community Gathering",
-    date: "June 20, 2024",
-    status: "In Progress" as const,
-    attendance: "25/100",
-  },
-  {
-    id: "3",
-    name: "Workshop on Innovation",
-    date: "May 25, 2024",
-    status: "Completed" as const,
-    attendance: "45/50",
-  },
-  {
-    id: "4",
-    name: "Networking Event",
-    date: "April 10, 2024",
-    status: "Completed" as const,
-    attendance: "75/100",
-  },
-  {
-    id: "5",
-    name: "Product Launch",
-    date: "March 5, 2024",
-    status: "Completed" as const,
-    attendance: "150/200",
-  }
-];
+import { apiClient } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Events() {
   const [activeTab, setActiveTab] = useState("all");
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  const filteredEvents = sampleEvents.filter(event => {
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!user) return;
+      try {
+        setLoading(true);
+        const userEvents = await apiClient.getEvents();
+        setEvents(userEvents);
+      } catch (error) {
+        console.error("Failed to fetch events:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [user]);
+
+  const getEventStatus = (event: any) => {
+    const eventDate = new Date(event.date);
+    const now = new Date();
+    
+    if (eventDate > now) return "Upcoming";
+    if (eventDate.toDateString() === now.toDateString()) return "In Progress";
+    return "Completed";
+  };
+
+  const filteredEvents = events.filter(event => {
+    const status = getEventStatus(event);
     if (activeTab === "all") return true;
-    if (activeTab === "upcoming") return event.status === "Upcoming";
-    if (activeTab === "completed") return event.status === "Completed";
+    if (activeTab === "upcoming") return status === "Upcoming";
+    if (activeTab === "completed") return status === "Completed";
     return false;
   });
 
@@ -102,22 +96,43 @@ export default function Events() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEvents.map((event) => (
-                  <TableRow key={event.id} className="hover:bg-gray-50">
-                    <TableCell className="font-medium">{event.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{event.date}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className={getStatusColor(event.status)}>
-                        {event.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">{event.attendance}</TableCell>
-                    <TableCell className="text-center">
-                      <Button asChild variant="outline" size="sm" className="text-meetcheck-blue border-meetcheck-blue hover:bg-meetcheck-light-blue">
-                        <Link to={`/events/${event.id}`}>View</Link>
-                      </Button>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      Loading events...
                     </TableCell>
                   </TableRow>
+                ) : filteredEvents.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      No events found. Create your first event to get started.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredEvents.map((event) => {
+                    const status = getEventStatus(event);
+                    return (
+                      <TableRow key={event.id} className="hover:bg-gray-50">
+                        <TableCell className="font-medium">{event.title}</TableCell>
+                        <TableCell className="text-muted-foreground">{event.date}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className={getStatusColor(status)}>
+                            {status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {event.capacity ? `0/${event.capacity}` : "No limit"}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button asChild variant="outline" size="sm" className="text-meetcheck-blue border-meetcheck-blue hover:bg-meetcheck-light-blue">
+                            <Link to={`/events/${event.id}/qr`}>View QR</Link>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
                 ))}
               </TableBody>
             </Table>

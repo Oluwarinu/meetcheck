@@ -4,6 +4,7 @@ import { defaultParticipantFields, getTemplateTitle, getTemplateDescription } fr
 import { StepHeader } from "./create-event/StepHeader";
 import { StepperNavigation } from "./create-event/StepperNavigation";
 import { StepRenderer } from "./create-event/useStepRenderer";
+import { apiClient } from "@/lib/api";
 
 export default function CreateEvent() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -69,18 +70,22 @@ export default function CreateEvent() {
     setFormData(prev => ({ ...prev, flierData }));
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      const eventId = Date.now().toString();
-      console.log("Event created:", formData);
-      navigate(`/events/${eventId}/qr`, {
-        state: {
-          eventData: formData,
-          eventId: eventId
-        }
-      });
+      try {
+        const eventData = await apiClient.createEvent(formData);
+        navigate(`/events/${eventData.id}/qr`, {
+          state: {
+            eventData,
+            eventId: eventData.id
+          }
+        });
+      } catch (error) {
+        console.error("Failed to create event:", error);
+        // Handle error appropriately
+      }
     }
   };
 
