@@ -133,8 +133,6 @@ export default function Events() {
                   })
                 )}
               </TableBody>
-                ))}
-              </TableBody>
             </Table>
           </div>
         </TabsContent>

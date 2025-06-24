@@ -33,7 +33,6 @@ import { tierLimits, tierPricing, SubscriptionTier } from '@/utils/subscriptionT
 import CalendarSync from '@/components/calendar/CalendarSync';
 import { SubscriptionGuard } from '@/components/SubscriptionGuard';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../supabase';
 
 const Settings = () => {
   const { toast } = useToast();
@@ -111,17 +110,17 @@ const Settings = () => {
     ? (currentMonthEvents / tierInfo.limits.maxEventsPerMonth) * 100 
     : 0;
 
-  // Add a connectivity test function
-  const testSupabaseConnection = async () => {
+  // Test API connectivity
+  const testAPIConnection = async () => {
     if (!profile?.id) {
       toast({ title: 'Not logged in', description: 'You must be logged in to test connectivity.', variant: 'destructive' });
       return;
     }
-    const { data, error } = await supabase.from('user_profile').select('*').eq('id', profile.id).single();
-    if (error) {
-      toast({ title: 'Supabase Connection Failed', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: 'Supabase Connection Successful', description: 'Fetched your profile from Supabase.' });
+    try {
+      await updateProfile({}); // Test API call
+      toast({ title: 'API Connection Successful', description: 'Successfully connected to the API.' });
+    } catch (error: any) {
+      toast({ title: 'API Connection Failed', description: error.message, variant: 'destructive' });
     }
   };
 
