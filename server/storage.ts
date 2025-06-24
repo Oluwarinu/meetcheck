@@ -112,6 +112,16 @@ export class PostgresStorage implements IStorage {
     return result[0];
   }
 
+  async deleteEvent(id: string): Promise<void> {
+    // Delete related data first
+    await db.delete(check_ins).where(eq(check_ins.event_id, id));
+    await db.delete(participants).where(eq(participants.event_id, id));
+    await db.delete(event_metrics).where(eq(event_metrics.event_id, id));
+    
+    // Finally delete the event
+    await db.delete(events).where(eq(events.id, id));
+  }
+
   async getEventParticipants(eventId: string): Promise<Participant[]> {
     return await db.select().from(participants).where(eq(participants.event_id, eventId));
   }

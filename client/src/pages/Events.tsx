@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,12 +8,25 @@ import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { apiClient } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { EventManagement } from "@/components/EventManagement";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Events() {
   const [activeTab, setActiveTab] = useState("all");
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleEventUpdate = (updatedEvent: any) => {
+    setEvents(prev => prev.map(event => 
+      event.id === updatedEvent.id ? { ...event, ...updatedEvent } : event
+    ));
+  };
+
+  const handleEventDelete = (eventId: string) => {
+    setEvents(prev => prev.filter(event => event.id !== eventId));
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -92,19 +105,20 @@ export default function Events() {
                   <TableHead className="font-medium">Date</TableHead>
                   <TableHead className="font-medium">Status</TableHead>
                   <TableHead className="font-medium">Attendance</TableHead>
+                  <TableHead className="font-medium">Check-in Status</TableHead>
                   <TableHead className="font-medium text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
+                    <TableCell colSpan={6} className="text-center py-8">
                       Loading events...
                     </TableCell>
                   </TableRow>
                 ) : filteredEvents.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
+                    <TableCell colSpan={6} className="text-center py-8">
                       No events found. Create your first event to get started.
                     </TableCell>
                   </TableRow>
@@ -125,9 +139,9 @@ export default function Events() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${event.checkin_enabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                            <div className={`w-2 h-2 rounded-full ${event.checkin_enabled !== false ? 'bg-green-500' : 'bg-red-500'}`} />
                             <span className="text-sm">
-                              {event.checkin_enabled ? 'Active' : 'Disabled'}
+                              {event.checkin_enabled !== false ? 'Active' : 'Disabled'}
                             </span>
                           </div>
                         </TableCell>
