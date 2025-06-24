@@ -385,6 +385,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment routes
+  app.post('/api/payments/initialize', authenticateToken, async (req, res) => {
+    try {
+      const { email, amount, plan, metadata } = req.body;
+      
+      // Initialize payment with Paystack
+      const response = await fetch('https://api.paystack.co/transaction/initialize', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email,
+          amount: amount * 100, // Convert to kobo
+          currency: 'NGN',
+          plan,
+          metadata: {
+            user_id: req.user.id,
+            ...metadata
+          }
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.status) {
+        res.json(data.data);
+      } else {
+        res.status(400).json({ error: data.message });
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/payments/verify', authenticateToken, async (req, res) => {
+    try {
+      const { reference } = req.body;
+      
+      // Verify payment with Paystack
+      const response = await fetch(`https://api.paystack.co/transaction/verify/${reference}`, {
+        headers: {
+          'Authorization': `Bearer ${process.env.PAYSTACK_SECRET_KEY}`
+        }
+      });
+
+      const data = await response.json();
+      
+      if (data.status && data.data.status === 'success') {
+        // Update user subscription in database
+        const subscriptionData = {
+          user_id: req.user.id,
+          tier: data.data.metadata.plan || 'professional',
+          status: 'active',
+          started_at: new Date(),
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+          payment_reference: reference
+        };
+
+        await storage.createSubscription(subscriptionData);
+        
+        res.json({ 
+          success: true, 
+          message: 'Payment verified and subscription activated',
+          subscription: subscriptionData
+        });
+      } else {
+        res.status(400).json({ error: 'Payment verification failed' });
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Event management routes
   app.put('/api/events/:id', authenticateToken, async (req, res) => {
     try {

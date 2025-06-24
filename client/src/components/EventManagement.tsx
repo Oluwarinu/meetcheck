@@ -179,7 +179,9 @@ export function EventManagement({ event, onEventUpdate, onEventDelete }: EventMa
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Event</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{event.title}"? This action cannot be undone and will permanently remove:
+              <div>
+                Are you sure you want to delete "{event.title}"? This action cannot be undone and will permanently remove:
+              </div>
               <ul className="list-disc list-inside mt-2 space-y-1">
                 <li>All participant registrations</li>
                 <li>All check-in records</li>
