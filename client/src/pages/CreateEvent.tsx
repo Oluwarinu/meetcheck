@@ -28,6 +28,7 @@ interface ParticipantField {
   type: string;
   required: boolean;
   enabled: boolean;
+  options?: string[];
 }
 
 interface EventFormData {
@@ -44,14 +45,14 @@ interface EventFormData {
 }
 
 const DEFAULT_PARTICIPANT_FIELDS: ParticipantField[] = [
-  { id: 'fullName', label: 'Full Name', type: 'text', required: true, enabled: true },
-  { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true },
-  { id: 'phone', label: 'Phone Number', type: 'tel', required: false, enabled: false },
-  { id: 'registrationNumber', label: 'Registration Number', type: 'text', required: false, enabled: true },
-  { id: 'gender', label: 'Gender', type: 'select', required: false, enabled: true },
-  { id: 'organization', label: 'Organization', type: 'text', required: false, enabled: false },
-  { id: 'position', label: 'Position/Title', type: 'text', required: false, enabled: false },
-  { id: 'dietaryRequirements', label: 'Dietary Requirements', type: 'textarea', required: false, enabled: false },
+  { id: 'fullName', label: 'Full Name', type: 'text', required: true, enabled: true, options: [] },
+  { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true, options: [] },
+  { id: 'phone', label: 'Phone Number', type: 'tel', required: false, enabled: false, options: [] },
+  { id: 'registrationNumber', label: 'Registration Number', type: 'text', required: false, enabled: true, options: [] },
+  { id: 'gender', label: 'Gender', type: 'select', required: false, enabled: true, options: ['Male', 'Female', 'Other', 'Prefer not to say'] },
+  { id: 'organization', label: 'Organization', type: 'text', required: false, enabled: false, options: [] },
+  { id: 'position', label: 'Position/Title', type: 'text', required: false, enabled: false, options: [] },
+  { id: 'dietaryRequirements', label: 'Dietary Requirements', type: 'textarea', required: false, enabled: false, options: [] },
 ];
 
 export default function CreateEvent() {
@@ -186,7 +187,8 @@ export default function CreateEvent() {
       label: label.trim(),
       type: 'text',
       required: false,
-      enabled: true
+      enabled: true,
+      options: []
     };
     
     updateFormData({

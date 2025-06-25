@@ -144,6 +144,16 @@ export default function PublicCheckIn() {
       return;
     }
 
+    // Check location verification requirement
+    if (event.location_verification && locationStatus !== 'granted') {
+      toast({
+        title: "Location Required",
+        description: "This event requires location verification. Please allow location access to check in.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSubmitting(true);
     setProgress(0);
 
@@ -401,7 +411,45 @@ export default function PublicCheckIn() {
                 </div>
               ))}
 
-              {locationStatus === 'denied' && (
+              {/* Location Status Indicators */}
+              {event.location_verification && (
+                <div className="space-y-2">
+                  {locationStatus === 'requesting' && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                        <span className="text-sm text-blue-800">
+                          Requesting location access...
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {locationStatus === 'granted' && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                        <span className="text-sm text-green-800">
+                          Location verified successfully
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {locationStatus === 'denied' && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <div className="flex items-center">
+                        <AlertCircle className="h-5 w-5 text-red-600 mr-2" />
+                        <span className="text-sm text-red-800">
+                          Location access is required for this event. Please allow location access to continue.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {!event.location_verification && locationStatus === 'denied' && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <div className="flex items-center">
                     <AlertCircle className="h-5 w-5 text-yellow-600 mr-2" />
@@ -415,7 +463,7 @@ export default function PublicCheckIn() {
               <Button 
                 type="submit" 
                 className="w-full bg-blue-600 hover:bg-blue-700"
-                disabled={submitting}
+                disabled={submitting || (event.location_verification && locationStatus !== 'granted')}
               >
                 {submitting ? (
                   <>
