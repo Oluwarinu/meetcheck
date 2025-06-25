@@ -55,7 +55,7 @@ export default function Login() {
         title: 'Login Successful',
         description: 'Welcome back to MeetCheck!',
       });
-      navigate('/dashboard');
+      navigate('/events');
     } catch (err) {
       toast({
         title: 'Login Failed',

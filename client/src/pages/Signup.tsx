@@ -6,11 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Eye, EyeOff, Check } from "lucide-react";
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from "@/hooks/use-toast";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -19,16 +22,37 @@ export default function Signup() {
     confirmPassword: "",
     agreeToTerms: false,
   });
-  const { signup, loading, error } = useAuth();
+  const { signup, loading, error: authError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null); // Clear previous errors
+    
     if (!formData.email || !formData.password || formData.password !== formData.confirmPassword) {
-      alert('Please fill all fields and ensure passwords match.');
+      setError('Please fill all fields and ensure passwords match.');
       return;
     }
-    await signup(formData.email, formData.password, formData.firstName + ' ' + formData.lastName);
-    navigate('/dashboard');
+    
+    if (!formData.agreeToTerms) {
+      setError('Please agree to the Terms of Service and Privacy Policy.');
+      return;
+    }
+    
+    try {
+      await signup(formData.email, formData.password, formData.firstName + ' ' + formData.lastName);
+      toast({
+        title: "Account Created",
+        description: "Welcome to MeetCheck! Your account has been created successfully.",
+      });
+      navigate('/events');
+    } catch (error: any) {
+      // Error is already handled in AuthContext, but also show toast
+      toast({
+        title: "Signup Failed",
+        description: authError || "Failed to create account. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,6 +209,15 @@ export default function Signup() {
                 )}
               </div>
 
+              {/* Error display */}
+              {(error || authError) && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                  <div className="text-sm text-red-600">
+                    {error || authError}
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-start">
                 <input
                   id="agreeToTerms"
@@ -211,12 +244,13 @@ export default function Signup() {
                 type="submit"
                 className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-medium"
                 disabled={
+                  loading ||
                   !formData.agreeToTerms ||
                   formData.password !== formData.confirmPassword ||
                   !passwordRequirements.every(req => req.met)
                 }
               >
-                Create account
+                {loading ? "Creating account..." : "Create account"}
               </Button>
             </form>
 
