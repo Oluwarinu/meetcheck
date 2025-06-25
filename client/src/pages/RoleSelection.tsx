@@ -64,21 +64,27 @@ export default function RoleSelection() {
   const { user, updateProfile } = useAuth();
   const { toast } = useToast();
 
+  console.log('RoleSelection - User:', user);
+
   // Redirect to login if not authenticated
   if (!user) {
+    console.log('No user, redirecting to login');
     navigate('/login');
     return null;
   }
 
   // If user already has a role, redirect to dashboard
   if (user.user_role) {
+    console.log('User has role:', user.user_role, 'redirecting to dashboard');
     navigate('/dashboard');
     return null;
   }
 
   const handleRoleSelect = async (roleId: Role['id']) => {
+    console.log('Role selected:', roleId);
     try {
-      await updateProfile({ user_role: roleId });
+      const updatedUser = await updateProfile({ user_role: roleId });
+      console.log('Profile updated:', updatedUser);
       
       toast({
         title: "Role Selected",

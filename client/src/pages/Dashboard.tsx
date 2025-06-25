@@ -28,6 +28,10 @@ export default function Dashboard() {
                           userRole === 'training_manager' ? 'corporate' : 
                           userRole === 'hr_leader' ? 'corporate' : 'networking';
 
+  console.log('Dashboard - User:', user);
+  console.log('Dashboard - User Role:', userRole);
+  console.log('Dashboard - Loading:', loading);
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!user) return;
@@ -113,8 +117,23 @@ export default function Dashboard() {
 
   // If no role selected, redirect to role selection
   if (!userRole && !loading) {
-    window.location.href = '/role-selection';
-    return null;
+    console.log('No user role, redirecting to role selection');
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="max-w-md w-full text-center">
+          <h2 className="text-2xl font-bold mb-4">Welcome to MeetCheck!</h2>
+          <p className="text-gray-600 mb-6">
+            To get started, please select your role to access customized features and templates.
+          </p>
+          <Button 
+            onClick={() => window.location.href = '/role-selection'}
+            className="w-full"
+          >
+            Choose Your Role
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
