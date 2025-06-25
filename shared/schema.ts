@@ -25,6 +25,8 @@ export const events = pgTable("events", {
   flier_data: text("flier_data"),
   checkin_enabled: boolean("checkin_enabled").default(true),
   checkin_deadline: timestamp("checkin_deadline"), // When QR code expires
+  location_verification: boolean("location_verification").default(false),
+  industry_type: text("industry_type"), // 'corporate', 'education', 'networking'
   created_by: uuid("created_by").notNull().references(() => users.id),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
