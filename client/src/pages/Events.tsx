@@ -1,181 +1,141 @@
+` tags.
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
-import { Link } from "react-router-dom";
-import { apiClient } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
-import { EventManagement } from "@/components/EventManagement";
-import { useToast } from "@/hooks/use-toast";
+```
+<replit_final_file>
+import React, { useState, useEffect } from 'react';
+import { Plus, Search, Filter, Calendar, Users, MapPin } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiClient } from '@/lib/api';
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  capacity: number;
+  attendees: number;
+  status: 'upcoming' | 'ongoing' | 'completed';
+}
 
 export default function Events() {
-  const [activeTab, setActiveTab] = useState("all");
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { toast } = useToast();
-
-  const handleEventUpdate = (updatedEvent: any) => {
-    setEvents(prev => prev.map(event => 
-      event.id === updatedEvent.id ? { ...event, ...updatedEvent } : event
-    ));
-  };
-
-  const handleEventDelete = (eventId: string) => {
-    setEvents(prev => prev.filter(event => event.id !== eventId));
-  };
+  const [events, setEvents] = useState<Event[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      if (!user) return;
-      try {
-        setLoading(true);
-        const userEvents = await apiClient.getEvents();
-        setEvents(userEvents);
-      } catch (error) {
-        console.error("Failed to fetch events:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchEvents();
-  }, [user]);
+  }, []);
 
-  const getEventStatus = (event: any) => {
-    const eventDate = new Date(event.date);
-    const now = new Date();
-    
-    if (eventDate > now) return "Upcoming";
-    if (eventDate.toDateString() === now.toDateString()) return "In Progress";
-    return "Completed";
-  };
-
-  const filteredEvents = events.filter(event => {
-    const status = getEventStatus(event);
-    if (activeTab === "all") return true;
-    if (activeTab === "upcoming") return status === "Upcoming";
-    if (activeTab === "completed") return status === "Completed";
-    return false;
-  });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Upcoming":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-100";
-      case "In Progress":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
-      case "Completed":
-        return "bg-green-100 text-green-800 hover:bg-green-100";
-      default:
-        return "bg-gray-100 text-gray-800 hover:bg-gray-100";
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      // Mock data for now - replace with actual API call
+      const mockEvents: Event[] = [
+        {
+          id: '1',
+          title: 'Team Meeting',
+          description: 'Weekly team sync',
+          date: '2024-01-15',
+          time: '10:00',
+          location: 'Conference Room A',
+          capacity: 20,
+          attendees: 12,
+          status: 'upcoming'
+        }
+      ];
+      setEvents(mockEvents);
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const filteredEvents = events.filter(event => {
+    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || event.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
+  if (loading) {
+    return <div className="p-6">Loading events...</div>;
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Events</h1>
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Events</h1>
+        <Button>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Event
+        </Button>
+      </div>
+
+      <div className="flex gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search events..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
-        <Button asChild className="bg-meetcheck-blue hover:bg-blue-600">
-          <Link to="/create-event" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Event
-          </Link>
-        </Button>
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="px-3 py-2 border rounded-md"
+        >
+          <option value="all">All Events</option>
+          <option value="upcoming">Upcoming</option>
+          <option value="ongoing">Ongoing</option>
+          <option value="completed">Completed</option>
+        </select>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto sm:max-w-lg lg:w-[400px]">
-          <TabsTrigger value="all" className="text-xs sm:text-sm">All Events</TabsTrigger>
-          <TabsTrigger value="upcoming" className="text-xs sm:text-sm">Upcoming</TabsTrigger>
-          <TabsTrigger value="completed" className="text-xs sm:text-sm">Completed</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value={activeTab} className="mt-6">
-          <div className="bg-white rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="font-medium">Event Name</TableHead>
-                  <TableHead className="font-medium">Date</TableHead>
-                  <TableHead className="font-medium">Status</TableHead>
-                  <TableHead className="font-medium">Attendance</TableHead>
-                  <TableHead className="font-medium">Check-in Status</TableHead>
-                  <TableHead className="font-medium text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      Loading events...
-                    </TableCell>
-                  </TableRow>
-                ) : filteredEvents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      No events found. Create your first event to get started.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredEvents.map((event) => {
-                    const status = getEventStatus(event);
-                    return (
-                      <TableRow key={event.id} className="hover:bg-gray-50">
-                        <TableCell className="font-medium">{event.title}</TableCell>
-                        <TableCell className="text-muted-foreground">{event.date}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={getStatusColor(status)}>
-                            {status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {event.capacity ? `0/${event.capacity}` : "No limit"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${event.checkin_enabled !== false ? 'bg-green-500' : 'bg-red-500'}`} />
-                            <span className="text-sm">
-                              {event.checkin_enabled !== false ? 'Active' : 'Disabled'}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex gap-2 justify-center">
-                            <Button asChild variant="outline" size="sm" className="text-meetcheck-blue border-meetcheck-blue hover:bg-meetcheck-light-blue">
-                              <Link to={`/events/${event.id}/qr`}>View QR</Link>
-                            </Button>
-                            <EventManagement 
-                              event={event}
-                              onEventUpdate={handleEventUpdate}
-                              onEventDelete={handleEventDelete}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      {/* Bottom left New Event button */}
-      <div className="fixed bottom-6 left-6">
-        <Button asChild className="bg-meetcheck-blue hover:bg-blue-600 shadow-lg">
-          <Link to="/create-event" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Event
-          </Link>
-        </Button>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {filteredEvents.map((event) => (
+          <Card key={event.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <CardTitle className="text-lg">{event.title}</CardTitle>
+                <Badge variant={event.status === 'upcoming' ? 'default' : 'secondary'}>
+                  {event.status}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm text-gray-600">{event.description}</p>
+              <div className="flex items-center text-sm text-gray-500">
+                <Calendar className="h-4 w-4 mr-1" />
+                {event.date} at {event.time}
+              </div>
+              <div className="flex items-center text-sm text-gray-500">
+                <MapPin className="h-4 w-4 mr-1" />
+                {event.location}
+              </div>
+              <div className="flex items-center text-sm text-gray-500">
+                <Users className="h-4 w-4 mr-1" />
+                {event.attendees}/{event.capacity} attendees
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
+      {filteredEvents.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-500">No events found. Create your first event!</p>
+        </div>
+      )}
     </div>
   );
 }

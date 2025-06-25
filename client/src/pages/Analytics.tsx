@@ -1,246 +1,126 @@
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Users, Calendar, BarChart3 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Clock, Users, TrendingUp, Download, FileText } from "lucide-react";
-import { StatsCard } from "@/components/StatsCard";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useSubscription } from "@/contexts/SubscriptionContext";
-import { hasFeatureAccess } from "@/utils/subscriptionTiers";
-import AdvancedAnalytics from "@/components/analytics/AdvancedAnalytics";
-import UpgradeTable from "@/components/analytics/UpgradeTable";
-import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
-
-const attendanceData = [
-  { week: 'Week 1', attendance: 180 },
-  { week: 'Week 2', attendance: 220 },
-  { week: 'Week 3', attendance: 200 },
-  { week: 'Week 4', attendance: 280 },
-];
-
-const sessionData = [
-  {
-    session: 'Session 1: Keynote',
-    startTime: '9:00 AM',
-    endTime: '10:00 AM',
-    attendees: 150,
-    checkInRate: 80
-  },
-  {
-    session: 'Session 2: Workshop',
-    startTime: '11:00 AM',
-    endTime: '12:00 PM',
-    attendees: 100,
-    checkInRate: 75
-  },
-  {
-    session: 'Session 3: Networking',
-    startTime: '1:00 PM',
-    endTime: '2:00 PM',
-    attendees: 80,
-    checkInRate: 60
-  }
-];
+interface AnalyticsData {
+  totalEvents: number;
+  totalAttendees: number;
+  averageAttendance: number;
+  upcomingEvents: number;
+}
 
 export default function Analytics() {
-  const { tier } = useSubscription();
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const [analytics, setAnalytics] = useState<AnalyticsData>({
+    totalEvents: 0,
+    totalAttendees: 0,
+    averageAttendance: 0,
+    upcomingEvents: 0
+  });
+  const [loading, setLoading] = useState(true);
 
-  const handleDownloadCSV = async () => {
+  useEffect(() => {
+    fetchAnalytics();
+  }, []);
+
+  const fetchAnalytics = async () => {
     try {
-      const events = await apiClient.getEvents();
-      const csvContent = generateCSVContent(events);
-      downloadFile(csvContent, 'events-report.csv', 'text/csv');
-      toast({
-        title: "CSV Downloaded",
-        description: "Your CSV report has been downloaded successfully.",
-      });
+      setLoading(true);
+      // Mock data - replace with actual API call
+      const mockData: AnalyticsData = {
+        totalEvents: 12,
+        totalAttendees: 340,
+        averageAttendance: 28.3,
+        upcomingEvents: 3
+      };
+      setAnalytics(mockData);
     } catch (error) {
-      toast({
-        title: "Download Failed",
-        description: "Failed to generate CSV report.",
-        variant: "destructive"
-      });
+      console.error('Failed to fetch analytics:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDownloadExcel = () => {
-    toast({
-      title: "Excel Export",
-      description: "Excel export feature available in Professional tier.",
-    });
-  };
-
-  const handleDownloadReport = () => {
-    toast({
-      title: "Advanced Reports",
-      description: "Advanced reporting available in Professional tier.",
-    });
-  };
-
-  const generateCSVContent = (events: any[]) => {
-    const headers = ['Event Name', 'Date', 'Time', 'Location', 'Capacity', 'Created'];
-    const rows = events.map(event => [
-      event.title,
-      event.date,
-      event.time,
-      event.location,
-      event.capacity || 'No limit',
-      new Date(event.created_at).toLocaleDateString()
-    ]);
-    
-    return [headers, ...rows].map(row => 
-      row.map(cell => `"${cell}"`).join(',')
-    ).join('\n');
-  };
-
-  const downloadFile = (content: string, filename: string, type: string) => {
-    const blob = new Blob([content], { type });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  };
+  if (loading) {
+    return <div className="p-6">Loading analytics...</div>;
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Event Analytics</h1>
-        <p className="text-muted-foreground">Track attendance, engagement, and more for your events.</p>
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Analytics</h1>
+        <Button variant="outline">
+          <BarChart3 className="h-4 w-4 mr-2" />
+          Export Report
+        </Button>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search events" className="pl-10" />
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics.totalEvents}</div>
+            <p className="text-xs text-muted-foreground">
+              +2 from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Attendees</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics.totalAttendees}</div>
+            <p className="text-xs text-muted-foreground">
+              +12% from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Attendance</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics.averageAttendance}</div>
+            <p className="text-xs text-muted-foreground">
+              +5% from last month
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analytics.upcomingEvents}</div>
+            <p className="text-xs text-muted-foreground">
+              Next 30 days
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatsCard
-          title="Total Attendance"
-          value="250"
-          icon={<Users className="h-4 w-4" />}
-        />
-        <StatsCard
-          title="Average Check-in Time"
-          value="10:30 AM"
-          icon={<Clock className="h-4 w-4" />}
-        />
-        <StatsCard
-          title="Unique Attendees"
-          value="200"
-          icon={<Users className="h-4 w-4" />}
-        />
-      </div>
-
-      {/* Basic Analytics - Available to all tiers */}
       <Card>
         <CardHeader>
-          <CardTitle>Attendance Trends</CardTitle>
+          <CardTitle>Event Performance</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
-            <div className="flex items-center gap-2 text-sm">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              <span className="font-semibold text-green-600">+15%</span>
-              <span className="text-muted-foreground">Last 30 Days +15%</span>
-            </div>
-          </div>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={attendanceData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="attendance" stroke="hsl(var(--meetcheck-blue))" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="text-center py-12 text-gray-500">
+            Chart visualization will be implemented here
           </div>
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Session Attendance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 font-medium">Session</th>
-                  <th className="text-left py-2 font-medium">Start Time</th>
-                  <th className="text-left py-2 font-medium">End Time</th>
-                  <th className="text-left py-2 font-medium">Attendees</th>
-                  <th className="text-left py-2 font-medium">Check-in Rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sessionData.map((session, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="py-3">{session.session}</td>
-                    <td className="py-3 text-muted-foreground">{session.startTime}</td>
-                    <td className="py-3 text-muted-foreground">{session.endTime}</td>
-                    <td className="py-3">{session.attendees}</td>
-                    <td className="py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-12 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-meetcheck-blue h-2 rounded-full" 
-                            style={{ width: `${session.checkInRate}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm">{session.checkInRate}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {/* Download Options - Excel now available to all users */}
-          <div className="flex gap-2 mt-4">
-            <Button onClick={handleDownloadCSV} variant="outline" className="flex items-center space-x-2">
-              <Download className="h-4 w-4" />
-              <span>Download CSV</span>
-            </Button>
-            
-            <Button onClick={handleDownloadExcel} variant="outline" className="flex items-center space-x-2">
-              <Download className="h-4 w-4" />
-              <span>Download Excel</span>
-            </Button>
-            
-            {/* Report Download - Professional/Enterprise only */}
-            {hasFeatureAccess(tier, 'hasAdvancedAnalytics') ? (
-              <Button onClick={handleDownloadReport} className="flex items-center space-x-2">
-                <FileText className="h-4 w-4" />
-                <span>Generate Report</span>
-              </Button>
-            ) : (
-              <Button disabled className="flex items-center space-x-2" title="Advanced reports require Professional plan">
-                <FileText className="h-4 w-4" />
-                <span>Generate Report</span>
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Upgrade Features Table for Freemium Users */}
-      {tier === 'freemium' && <UpgradeTable />}
-
-      {/* Advanced Analytics - Professional/Enterprise Only */}
-      {hasFeatureAccess(tier, 'hasAdvancedAnalytics') && <AdvancedAnalytics />}
     </div>
   );
 }

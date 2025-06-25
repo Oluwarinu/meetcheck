@@ -1,141 +1,166 @@
-import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { defaultParticipantFields, getTemplateTitle, getTemplateDescription } from "@/utils/eventTemplates";
-import { StepHeader } from "./create-event/StepHeader";
-import { StepperNavigation } from "./create-event/StepperNavigation";
-import { StepRenderer } from "./create-event/useStepRenderer";
-import { apiClient } from "@/lib/api";
+
+import React, { useState } from 'react';
+import { Calendar, MapPin, Users, Clock, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface EventForm {
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  capacity: number;
+}
 
 export default function CreateEvent() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const template = location.state?.template;
-
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    date: "",
-    time: "",
-    location: "",
-    capacity: "",
-    participantFields: defaultParticipantFields,
-    flierData: null as string | null,
+  const { user } = useAuth();
+  const [formData, setFormData] = useState<EventForm>({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    location: '',
+    capacity: 50
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (template) {
-      const templateCapacity = template.capacity?.toString() || "";
-      setFormData(prev => ({
-        ...prev,
-        title: getTemplateTitle(template.id),
-        description: getTemplateDescription(template.id),
-        capacity: templateCapacity,
-        participantFields: template.participantFields || defaultParticipantFields
-      }));
-    }
-  }, [template]);
-
-  const totalSteps = 7;
-
-  const updateFormData = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof EventForm, value: string | number) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const updateParticipantField = (
-    fieldId: string,
-    property: "enabled" | "required" | "addCustom",
-    value: boolean | string | any
-  ) => {
-    setFormData(prev => {
-      if (property === "addCustom") {
-        return {
-          ...prev,
-          participantFields: [
-            ...prev.participantFields,
-            value
-          ],
-        };
-      }
-      return {
-        ...prev,
-        participantFields: prev.participantFields.map(field =>
-          field.id === fieldId ? { ...field, [property]: value } : field
-        ),
-      };
-    });
-  };
-
-  const updateFlierData = (flierData: string | null) => {
-    setFormData(prev => ({ ...prev, flierData }));
-  };
-
-  const handleNext = async () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      try {
-        // Transform the form data to match backend schema
-        const eventPayload = {
-          title: formData.title,
-          description: formData.description,
-          date: formData.date,
-          time: formData.time,
-          location: formData.location,
-          capacity: formData.capacity ? parseInt(formData.capacity) : null,
-          participant_fields: formData.participantFields,
-          flier_data: formData.flierData,
-          checkin_enabled: true,
-          checkin_deadline: null // Event creator can set this later in settings
-        };
-        
-        const eventData = await apiClient.createEvent(eventPayload);
-        navigate(`/events/${eventData.id}/qr`, {
-          state: {
-            eventData,
-            eventId: eventData.id
-          }
-        });
-      } catch (error) {
-        console.error("Failed to create event:", error);
-        // Handle error appropriately
-      }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    setIsSubmitting(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      console.log('Event created:', formData);
+      
+      // Reset form
+      setFormData({
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        location: '',
+        capacity: 50
+      });
+      
+      alert('Event created successfully!');
+    } catch (error) {
+      console.error('Failed to create event:', error);
+      alert('Failed to create event. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const stepElement = StepRenderer({
-    currentStep,
-    formData,
-    template,
-    updateFormData,
-    updateParticipantField,
-    updateFlierData,
-  });
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <StepHeader
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        template={template}
-      />
-      <div className="bg-white border rounded-lg shadow-sm px-0 sm:px-0 mb-8">
-        <div className="space-y-6 px-6 py-0">
-          {stepElement}
-          <StepperNavigation
-            currentStep={currentStep}
-            totalSteps={totalSteps}
-            handleNext={handleNext}
-            handlePrevious={handlePrevious}
-          />
-        </div>
-      </div>
+    <div className="p-6 max-w-2xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Create New Event
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Event Title</label>
+              <Input
+                placeholder="Enter event title"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                placeholder="Describe your event"
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1">
+                  <Calendar className="h-4 w-4" />
+                  Date
+                </label>
+                <Input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  Time
+                </label>
+                <Input
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) => handleInputChange('time', e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                Location
+              </label>
+              <Input
+                placeholder="Event location"
+                value={formData.location}
+                onChange={(e) => handleInputChange('location', e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                Capacity
+              </label>
+              <Input
+                type="number"
+                min="1"
+                placeholder="Maximum attendees"
+                value={formData.capacity}
+                onChange={(e) => handleInputChange('capacity', parseInt(e.target.value) || 0)}
+                required
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {isSubmitting ? 'Creating Event...' : 'Create Event'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }
