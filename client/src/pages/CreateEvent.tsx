@@ -59,7 +59,7 @@ export default function CreateEvent() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<EventFormData>({
@@ -121,7 +121,7 @@ export default function CreateEvent() {
       };
 
       const createdEvent = await apiClient.createEvent(eventData);
-      
+
       toast({
         title: "Event Created Successfully!",
         description: "Your event has been created and QR code generated.",
@@ -129,7 +129,7 @@ export default function CreateEvent() {
 
       // Navigate to QR code page
       navigate(`/events/${createdEvent.id}/qr`);
-      
+
     } catch (error: any) {
       console.error('Failed to create event:', error);
       toast({
@@ -181,7 +181,7 @@ export default function CreateEvent() {
 
   const addCustomField = (label: string) => {
     if (!label.trim()) return;
-    
+
     const newField: ParticipantField = {
       id: `custom_${Date.now()}`,
       label: label.trim(),
@@ -190,7 +190,7 @@ export default function CreateEvent() {
       enabled: true,
       options: []
     };
-    
+
     updateFormData({
       participantFields: [...formData.participantFields, newField]
     });
@@ -205,7 +205,7 @@ export default function CreateEvent() {
               <h3 className="text-lg font-semibold mb-2">Event Title</h3>
               <p className="text-gray-600">Let's start with the basics</p>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="title">Event Title</Label>
@@ -217,7 +217,7 @@ export default function CreateEvent() {
                   required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
@@ -239,7 +239,7 @@ export default function CreateEvent() {
               <h3 className="text-lg font-semibold mb-2">Date & Time</h3>
               <p className="text-gray-600">When will your event take place?</p>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="date">Date</Label>
@@ -251,7 +251,7 @@ export default function CreateEvent() {
                   required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="time">Time</Label>
                 <Input
@@ -273,7 +273,7 @@ export default function CreateEvent() {
               <h3 className="text-lg font-semibold mb-2">Location & Capacity</h3>
               <p className="text-gray-600">Where will your event be held?</p>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <Label htmlFor="location">Location</Label>
@@ -285,7 +285,7 @@ export default function CreateEvent() {
                   required
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="capacity">Expected Capacity</Label>
                 <Input
@@ -309,7 +309,7 @@ export default function CreateEvent() {
               <h3 className="text-lg font-semibold mb-2">Configure Participant Information Fields</h3>
               <p className="text-gray-600">Select which information you want to collect from participants during registration.</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="flex gap-2 mb-4">
                 <Input
@@ -335,7 +335,7 @@ export default function CreateEvent() {
                   Add Field
                 </Button>
               </div>
-              
+
               <div className="space-y-3">
                 {formData.participantFields.map((field) => (
                   <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -368,14 +368,14 @@ export default function CreateEvent() {
           </div>
         );
 
-      case 5:
+      case 6:
         return (
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Event Flier</h3>
               <p className="text-gray-600">Upload a flier that will be displayed to participants when they scan the QR code.</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 {formData.flierData ? (
@@ -431,14 +431,14 @@ export default function CreateEvent() {
           </div>
         );
 
-      case 6:
+      case 7:
         return (
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Location Verification</h3>
               <p className="text-gray-600">Set up location-based verification for secure check-ins.</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="p-6 border rounded-lg">
                 <div className="flex items-center space-x-3 mb-4">
@@ -453,7 +453,7 @@ export default function CreateEvent() {
                     </p>
                   </div>
                 </div>
-                
+
                 {formData.locationVerification && (
                   <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
@@ -466,21 +466,21 @@ export default function CreateEvent() {
           </div>
         );
 
-      case 7:
+      case 8:
         return (
           <div className="space-y-6">
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Review & Create</h3>
               <p className="text-gray-600">Review your event details and create the event.</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="p-4 bg-gray-50 rounded-lg space-y-3">
                 <div>
                   <h4 className="font-medium text-lg">{formData.title}</h4>
                   <p className="text-gray-600">{formData.description}</p>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <strong>Date:</strong> {formData.date}
@@ -495,7 +495,7 @@ export default function CreateEvent() {
                     <strong>Capacity:</strong> {formData.capacity}
                   </div>
                 </div>
-                
+
                 <div>
                   <strong className="text-sm">Participant Fields:</strong>
                   <p className="text-sm text-gray-600 mt-1">
@@ -505,7 +505,7 @@ export default function CreateEvent() {
                       .join(', ')}
                   </p>
                 </div>
-                
+
                 {formData.flierData && (
                   <div>
                     <strong className="text-sm">Event Flier:</strong>
@@ -543,7 +543,7 @@ export default function CreateEvent() {
           <span className="mx-2">/</span>
           <span>New Event</span>
         </div>
-        
+
         <h1 className="text-2xl font-bold mb-2">Step {currentStep} of {totalSteps}</h1>
         <Progress value={progress} className="h-2" />
       </div>
