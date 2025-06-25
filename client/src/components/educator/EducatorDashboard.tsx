@@ -205,24 +205,31 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ userRole }) => {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5" />
+                  <Clock className="h-5 w-5" />
                   Attendance Distribution by Course
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {['CS101', 'MATH201', 'ENG102', 'PHYS301'].map((course, index) => {
-                    const rates = [92.1, 87.3, 89.5, 84.2];
-                    return (
-                      <div key={course} className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm font-medium">{course}</span>
-                          <span className="text-sm text-gray-600">{rates[index]}%</span>
-                        </div>
-                        <Progress value={rates[index]} className="h-2" />
+                  {[
+                    { course: 'CS101', rate: 92.1 },
+                    { course: 'MATH201', rate: 87.3 },
+                    { course: 'ENG102', rate: 89.5 },
+                    { course: 'PHYS301', rate: 84.2 }
+                  ].map(({ course, rate }) => (
+                    <div key={course} className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">{course}</span>
+                        <span className="text-sm text-gray-600">{rate}%</span>
                       </div>
-                    );
-                  })}
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-600 h-2 rounded-full" 
+                          style={{ width: `${rate}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -236,16 +243,26 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ userRole }) => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {['A (90-100%)', 'B (80-89%)', 'C (70-79%)', 'D (60-69%)', 'F (<60%)'].map((grade, index) => {
-                    const counts = [45, 78, 89, 23, 5];
-                    const percentage = (counts[index] / 240) * 100;
+                  {[
+                    { grade: 'A (90-100%)', count: 45, color: 'bg-blue-600' },
+                    { grade: 'B (80-89%)', count: 78, color: 'bg-blue-600' },
+                    { grade: 'C (70-79%)', count: 89, color: 'bg-blue-600' },
+                    { grade: 'D (60-69%)', count: 23, color: 'bg-blue-600' },
+                    { grade: 'F (<60%)', count: 5, color: 'bg-blue-600' }
+                  ].map(({ grade, count, color }) => {
+                    const percentage = (count / 240) * 100;
                     return (
                       <div key={grade} className="space-y-2">
                         <div className="flex justify-between">
                           <span className="text-sm font-medium">{grade}</span>
-                          <span className="text-sm text-gray-600">{counts[index]} students</span>
+                          <span className="text-sm text-gray-600">{count} students</span>
                         </div>
-                        <Progress value={percentage} className="h-2" />
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className={`${color} h-2 rounded-full`} 
+                            style={{ width: `${percentage}%` }}
+                          ></div>
+                        </div>
                       </div>
                     );
                   })}
