@@ -1,31 +1,34 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { apiClient } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventManagement } from "@/components/EventManagement";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api";
+import { 
+  Plus, 
+  Search, 
+  Calendar, 
+  Users, 
+  MapPin, 
+  Clock,
+  Eye,
+  QrCode,
+  MoreHorizontal,
+  Edit,
+  Trash2
+} from "lucide-react";
 
 export default function Events() {
-  const [activeTab, setActiveTab] = useState("all");
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { toast } = useToast();
-
-  const handleEventUpdate = (updatedEvent: any) => {
-    setEvents(prev => prev.map(event => 
-      event.id === updatedEvent.id ? { ...event, ...updatedEvent } : event
-    ));
-  };
-
-  const handleEventDelete = (eventId: string) => {
-    setEvents(prev => prev.filter(event => event.id !== eventId));
-  };
+  const [events, setEvents] = useState<any[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -34,20 +37,47 @@ export default function Events() {
         setLoading(true);
         const userEvents = await apiClient.getEvents();
         setEvents(userEvents);
+        setFilteredEvents(userEvents);
       } catch (error) {
         console.error("Failed to fetch events:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load events",
-          variant: "destructive"
-        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvents();
-  }, [user, toast]);
+  }, [user]);
+
+  useEffect(() => {
+    let filtered = events;
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(event =>
+        event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        event.location?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Filter by status tab
+    if (activeTab !== "all") {
+      filtered = filtered.filter(event => {
+        const eventDate = new Date(event.date);
+        const today = new Date();
+        
+        switch (activeTab) {
+          case "upcoming":
+            return eventDate >= today;
+          case "completed":
+            return eventDate < today;
+          default:
+            return true;
+        }
+      });
+    }
+
+    setFilteredEvents(filtered);
+  }, [events, searchTerm, activeTab]);
 
   const getEventStatus = (event: any) => {
     const eventDate = new Date(event.date);
@@ -75,103 +105,234 @@ export default function Events() {
     }
   };
 
-  const filteredEvents = events.filter(event => {
-    if (activeTab === "all") return true;
-    const status = getEventStatus(event);
-    return activeTab === "upcoming" ? status === "Upcoming" : status === "Completed";
-  });
+  const handleEventUpdate = (updatedEvent: any) => {
+    setEvents(events.map(event => 
+      event.id === updatedEvent.id ? updatedEvent : event
+    ));
+  };
+
+  const handleEventDelete = (eventId: string) => {
+    setEvents(events.filter(event => event.id !== eventId));
+  };
+
+  const upcomingCount = events.filter(event => {
+    const eventDate = new Date(event.date);
+    return eventDate >= new Date();
+  }).length;
+
+  const completedCount = events.filter(event => {
+    const eventDate = new Date(event.date);
+    return eventDate < new Date();
+  }).length;
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Events</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Events</h1>
+          <p className="text-gray-600 mt-1">Manage your events and track attendance</p>
         </div>
-        <Button asChild className="bg-meetcheck-blue hover:bg-blue-600">
-          <Link to="/create-event" className="flex items-center gap-2">
+        <Button asChild className="bg-blue-600 hover:bg-blue-700">
+          <Link to="/events/create" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             New Event
           </Link>
         </Button>
       </div>
 
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search events..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-          <TabsTrigger value="all">All Events</TabsTrigger>
-          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="all">All ({events.length})</TabsTrigger>
+          <TabsTrigger value="upcoming">Upcoming ({upcomingCount})</TabsTrigger>
+          <TabsTrigger value="completed">Completed ({completedCount})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="mt-6">
-          <div className="bg-white rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="font-medium">Event Name</TableHead>
-                  <TableHead className="font-medium">Date</TableHead>
-                  <TableHead className="font-medium">Status</TableHead>
-                  <TableHead className="font-medium">Attendance</TableHead>
-                  <TableHead className="font-medium">Check-in Status</TableHead>
-                  <TableHead className="font-medium text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      Loading events...
-                    </TableCell>
-                  </TableRow>
-                ) : filteredEvents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      No events found. Create your first event to get started.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredEvents.map((event) => {
-                    const status = getEventStatus(event);
-                    return (
-                      <TableRow key={event.id} className="hover:bg-gray-50">
-                        <TableCell className="font-medium">{event.title}</TableCell>
-                        <TableCell className="text-muted-foreground">{event.date}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className={getStatusColor(status)}>
-                            {status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {event.capacity ? `0/${event.capacity}` : "No limit"}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${event.checkin_enabled !== false ? 'bg-green-500' : 'bg-red-500'}`} />
-                            <span className="text-sm">
-                              {event.checkin_enabled !== false ? 'Active' : 'Disabled'}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex gap-2 justify-center">
-                            <Button asChild variant="outline" size="sm" className="text-meetcheck-blue border-meetcheck-blue hover:bg-meetcheck-light-blue">
-                              <Link to={`/events/${event.id}/qr`}>View QR</Link>
-                            </Button>
-                            <EventManagement 
-                              event={event}
-                              onEventUpdate={handleEventUpdate}
-                              onEventDelete={handleEventDelete}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
+        <TabsContent value="all" className="mt-6">
+          <EventsGrid 
+            events={filteredEvents} 
+            loading={loading}
+            onEventUpdate={handleEventUpdate}
+            onEventDelete={handleEventDelete}
+            getEventStatus={getEventStatus}
+            getStatusColor={getStatusColor}
+          />
+        </TabsContent>
+
+        <TabsContent value="upcoming" className="mt-6">
+          <EventsGrid 
+            events={filteredEvents} 
+            loading={loading}
+            onEventUpdate={handleEventUpdate}
+            onEventDelete={handleEventDelete}
+            getEventStatus={getEventStatus}
+            getStatusColor={getStatusColor}
+          />
+        </TabsContent>
+
+        <TabsContent value="completed" className="mt-6">
+          <EventsGrid 
+            events={filteredEvents} 
+            loading={loading}
+            onEventUpdate={handleEventUpdate}
+            onEventDelete={handleEventDelete}
+            getEventStatus={getEventStatus}
+            getStatusColor={getStatusColor}
+          />
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+interface EventsGridProps {
+  events: any[];
+  loading: boolean;
+  onEventUpdate: (event: any) => void;
+  onEventDelete: (eventId: string) => void;
+  getEventStatus: (event: any) => string;
+  getStatusColor: (status: string) => string;
+}
+
+function EventsGrid({ 
+  events, 
+  loading, 
+  onEventUpdate, 
+  onEventDelete, 
+  getEventStatus, 
+  getStatusColor 
+}: EventsGridProps) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <Card key={i} className="animate-pulse">
+            <CardHeader>
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="h-3 bg-gray-200 rounded"></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Calendar className="h-12 w-12 mx-auto text-gray-300 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
+        <p className="text-gray-600 mb-6">Get started by creating your first event.</p>
+        <Button asChild>
+          <Link to="/events/create">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Event
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {events.map((event) => {
+        const status = getEventStatus(event);
+        return (
+          <Card key={event.id} className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <CardTitle className="text-lg line-clamp-2">{event.title}</CardTitle>
+                  <CardDescription className="line-clamp-2 mt-1">
+                    {event.description}
+                  </CardDescription>
+                </div>
+                <EventManagement
+                  event={event}
+                  onEventUpdate={onEventUpdate}
+                  onEventDelete={onEventDelete}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between mt-3">
+                <Badge variant="secondary" className={getStatusColor(status)}>
+                  {status}
+                </Badge>
+                <div className="flex gap-1">
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to={`/events/${event.id}`}>
+                      <Eye className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link to={`/events/${event.id}/qr`}>
+                      <QrCode className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="space-y-3">
+              {/* Event Details */}
+              <div className="space-y-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>{event.date}</span>
+                  {event.time && (
+                    <>
+                      <Clock className="h-4 w-4 ml-2" />
+                      <span>{event.time}</span>
+                    </>
+                  )}
+                </div>
+                
+                {event.location && (
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <span className="truncate">{event.location}</span>
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  <span>
+                    {event.attendees || 0}
+                    {event.capacity ? `/${event.capacity}` : ""} attendees
+                  </span>
+                </div>
+              </div>
+
+              {/* Check-in Status */}
+              {event.checkin_enabled && (
+                <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                  ✓ Check-in enabled
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

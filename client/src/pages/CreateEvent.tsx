@@ -1,166 +1,585 @@
-
 import React, { useState } from 'react';
-import { Calendar, MapPin, Users, Clock, Save } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { apiClient } from '@/lib/api';
+import { 
+  ArrowLeft, 
+  ArrowRight, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Users, 
+  Upload,
+  CheckCircle,
+  Image as ImageIcon
+} from 'lucide-react';
 
-interface EventForm {
+interface ParticipantField {
+  id: string;
+  label: string;
+  type: string;
+  required: boolean;
+  enabled: boolean;
+}
+
+interface EventFormData {
   title: string;
   description: string;
   date: string;
   time: string;
   location: string;
   capacity: number;
+  participantFields: ParticipantField[];
+  flierFile: File | null;
+  flierData: string | null;
+  locationVerification: boolean;
 }
 
+const DEFAULT_PARTICIPANT_FIELDS: ParticipantField[] = [
+  { id: 'fullName', label: 'Full Name', type: 'text', required: true, enabled: true },
+  { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true },
+  { id: 'phone', label: 'Phone Number', type: 'tel', required: false, enabled: false },
+  { id: 'registrationNumber', label: 'Registration Number', type: 'text', required: false, enabled: false },
+  { id: 'gender', label: 'Gender', type: 'select', required: false, enabled: false },
+  { id: 'organization', label: 'Organization', type: 'text', required: false, enabled: false },
+  { id: 'position', label: 'Position/Title', type: 'text', required: false, enabled: false },
+  { id: 'dietaryRequirements', label: 'Dietary Requirements', type: 'textarea', required: false, enabled: false },
+];
+
 export default function CreateEvent() {
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const [formData, setFormData] = useState<EventForm>({
+  const { toast } = useToast();
+  
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
     date: '',
     time: '',
     location: '',
-    capacity: 50
+    capacity: 50,
+    participantFields: DEFAULT_PARTICIPANT_FIELDS,
+    flierFile: null,
+    flierData: null,
+    locationVerification: false
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (field: keyof EventForm, value: string | number) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const totalSteps = 7;
+  const progress = (currentStep / totalSteps) * 100;
+
+  const updateFormData = (updates: Partial<EventFormData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleNext = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to create an event.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Event created:', formData);
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        capacity: formData.capacity,
+        participant_fields: formData.participantFields.filter(field => field.enabled),
+        flier_data: formData.flierData,
+        location_verification: formData.locationVerification,
+        checkin_enabled: true,
+        created_by: user.id
+      };
+
+      const createdEvent = await apiClient.createEvent(eventData);
       
-      // Reset form
-      setFormData({
-        title: '',
-        description: '',
-        date: '',
-        time: '',
-        location: '',
-        capacity: 50
+      toast({
+        title: "Event Created Successfully!",
+        description: "Your event has been created and QR code generated.",
       });
+
+      // Navigate to QR code page
+      navigate(`/events/${createdEvent.id}/qr`);
       
-      alert('Event created successfully!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create event:', error);
-      alert('Failed to create event. Please try again.');
+      toast({
+        title: "Event Creation Failed",
+        description: error.message || "Failed to create event. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Create New Event
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Event Title</label>
-              <Input
-                placeholder="Enter event title"
-                value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
-                required
-              />
-            </div>
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast({
+          title: "File Too Large",
+          description: "Please choose a file smaller than 5MB.",
+          variant: "destructive"
+        });
+        return;
+      }
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Description</label>
-              <Textarea
-                placeholder="Describe your event"
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                rows={3}
-              />
-            </div>
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        updateFormData({
+          flierFile: file,
+          flierData: e.target?.result as string
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  Date
-                </label>
+  const toggleParticipantField = (fieldId: string, enabled: boolean) => {
+    const updatedFields = formData.participantFields.map(field =>
+      field.id === fieldId ? { ...field, enabled } : field
+    );
+    updateFormData({ participantFields: updatedFields });
+  };
+
+  const addCustomField = (label: string) => {
+    if (!label.trim()) return;
+    
+    const newField: ParticipantField = {
+      id: `custom_${Date.now()}`,
+      label: label.trim(),
+      type: 'text',
+      required: false,
+      enabled: true
+    };
+    
+    updateFormData({
+      participantFields: [...formData.participantFields, newField]
+    });
+  };
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Event Title</h3>
+              <p className="text-gray-600">Let's start with the basics</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="title">Event Title</Label>
                 <Input
+                  id="title"
+                  placeholder="e.g. Team Meeting, Conference, Workshop"
+                  value={formData.title}
+                  onChange={(e) => updateFormData({ title: e.target.value })}
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Provide a brief overview of the event"
+                  value={formData.description}
+                  onChange={(e) => updateFormData({ description: e.target.value })}
+                  rows={4}
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Date & Time</h3>
+              <p className="text-gray-600">When will your event take place?</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="date">Date</Label>
+                <Input
+                  id="date"
                   type="date"
                   value={formData.date}
-                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  onChange={(e) => updateFormData({ date: e.target.value })}
                   required
                 />
               </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  Time
-                </label>
+              
+              <div>
+                <Label htmlFor="time">Time</Label>
                 <Input
+                  id="time"
                   type="time"
                   value={formData.time}
-                  onChange={(e) => handleInputChange('time', e.target.value)}
+                  onChange={(e) => updateFormData({ time: e.target.value })}
                   required
                 />
               </div>
             </div>
+          </div>
+        );
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                Location
-              </label>
-              <Input
-                placeholder="Event location"
-                value={formData.location}
-                onChange={(e) => handleInputChange('location', e.target.value)}
-                required
-              />
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Location & Capacity</h3>
+              <p className="text-gray-600">Where will your event be held?</p>
             </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-1">
-                <Users className="h-4 w-4" />
-                Capacity
-              </label>
-              <Input
-                type="number"
-                min="1"
-                placeholder="Maximum attendees"
-                value={formData.capacity}
-                onChange={(e) => handleInputChange('capacity', parseInt(e.target.value) || 0)}
-                required
-              />
+            
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  placeholder="Enter event location"
+                  value={formData.location}
+                  onChange={(e) => updateFormData({ location: e.target.value })}
+                  required
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="capacity">Expected Capacity</Label>
+                <Input
+                  id="capacity"
+                  type="number"
+                  min="1"
+                  placeholder="Maximum number of attendees"
+                  value={formData.capacity}
+                  onChange={(e) => updateFormData({ capacity: parseInt(e.target.value) || 50 })}
+                  required
+                />
+              </div>
             </div>
+          </div>
+        );
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {isSubmitting ? 'Creating Event...' : 'Create Event'}
-            </Button>
-          </form>
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Configure Participant Information Fields</h3>
+              <p className="text-gray-600">Select which information you want to collect from participants during registration.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex gap-2 mb-4">
+                <Input
+                  placeholder="Add a custom field (e.g., Student ID)"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      addCustomField((e.target as HTMLInputElement).value);
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    const input = document.querySelector('input[placeholder*="custom field"]') as HTMLInputElement;
+                    if (input) {
+                      addCustomField(input.value);
+                      input.value = '';
+                    }
+                  }}
+                >
+                  Add Field
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                {formData.participantFields.map((field) => (
+                  <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        checked={field.enabled}
+                        onCheckedChange={(checked) => toggleParticipantField(field.id, checked as boolean)}
+                      />
+                      <span className="font-medium">{field.label}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {field.required && (
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Required</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Event Flier</h3>
+              <p className="text-gray-600">Upload a flier that will be displayed to participants when they scan the QR code.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                {formData.flierData ? (
+                  <div className="space-y-4">
+                    <img
+                      src={formData.flierData}
+                      alt="Event Flier"
+                      className="max-h-64 mx-auto rounded-lg shadow-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => updateFormData({ flierFile: null, flierData: null })}
+                    >
+                      Remove Flier
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="mx-auto w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Upload className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Upload Event Flier</h4>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Drag and drop your flier here, or click to browse
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Supports PNG, JPG, JPEG, GIF, WebP • Max size 5MB
+                      </p>
+                    </div>
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="flier-upload"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('flier-upload')?.click()}
+                      >
+                        <ImageIcon className="h-4 w-4 mr-2" />
+                        Choose File
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Location Verification</h3>
+              <p className="text-gray-600">Set up location-based verification for secure check-ins.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="p-6 border rounded-lg">
+                <div className="flex items-center space-x-3 mb-4">
+                  <Checkbox
+                    checked={formData.locationVerification}
+                    onCheckedChange={(checked) => updateFormData({ locationVerification: checked as boolean })}
+                  />
+                  <div>
+                    <h4 className="font-medium">Enable Location Verification</h4>
+                    <p className="text-sm text-gray-600">
+                      Require participants to be at the event location to check in
+                    </p>
+                  </div>
+                </div>
+                
+                {formData.locationVerification && (
+                  <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800">
+                      Location verification will use GPS coordinates to ensure participants are physically present at the event location during check-in.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 7:
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Review & Create</h3>
+              <p className="text-gray-600">Review your event details and create the event.</p>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                <div>
+                  <h4 className="font-medium text-lg">{formData.title}</h4>
+                  <p className="text-gray-600">{formData.description}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <strong>Date:</strong> {formData.date}
+                  </div>
+                  <div>
+                    <strong>Time:</strong> {formData.time}
+                  </div>
+                  <div>
+                    <strong>Location:</strong> {formData.location}
+                  </div>
+                  <div>
+                    <strong>Capacity:</strong> {formData.capacity}
+                  </div>
+                </div>
+                
+                <div>
+                  <strong className="text-sm">Participant Fields:</strong>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {formData.participantFields
+                      .filter(field => field.enabled)
+                      .map(field => field.label)
+                      .join(', ')}
+                  </p>
+                </div>
+                
+                {formData.flierData && (
+                  <div>
+                    <strong className="text-sm">Event Flier:</strong>
+                    <div className="mt-2">
+                      <img
+                        src={formData.flierData}
+                        alt="Event Flier"
+                        className="max-h-32 rounded border"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex items-center text-sm text-gray-600 mb-4">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          <button 
+            onClick={() => navigate('/events')}
+            className="hover:text-gray-900"
+          >
+            Events
+          </button>
+          <span className="mx-2">/</span>
+          <span>New Event</span>
+        </div>
+        
+        <h1 className="text-2xl font-bold mb-2">Step {currentStep} of {totalSteps}</h1>
+        <Progress value={progress} className="h-2" />
+      </div>
+
+      {/* Step Content */}
+      <Card>
+        <CardContent className="p-8">
+          {renderStep()}
         </CardContent>
       </Card>
+
+      {/* Navigation */}
+      <div className="flex justify-between mt-6">
+        <Button
+          variant="outline"
+          onClick={handlePrevious}
+          disabled={currentStep === 1}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Previous
+        </Button>
+
+        {currentStep === totalSteps ? (
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !formData.title || !formData.date || !formData.location}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                Creating...
+              </>
+            ) : (
+              <>
+                Create Event & Generate QR
+                <CheckCircle className="h-4 w-4 ml-2" />
+              </>
+            )}
+          </Button>
+        ) : (
+          <Button
+            onClick={handleNext}
+            disabled={
+              (currentStep === 1 && (!formData.title || !formData.description)) ||
+              (currentStep === 2 && (!formData.date || !formData.time)) ||
+              (currentStep === 3 && (!formData.location || !formData.capacity))
+            }
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Next
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
