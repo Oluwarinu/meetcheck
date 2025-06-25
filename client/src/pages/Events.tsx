@@ -19,7 +19,9 @@ import {
   QrCode,
   MoreHorizontal,
   Edit,
-  Trash2
+  Trash2,
+  GraduationCap,
+  BookOpen
 } from "lucide-react";
 
 export default function Events() {
@@ -125,18 +127,42 @@ export default function Events() {
     return eventDate < new Date();
   }).length;
 
+  // Filter events for educators to show only academic events
+  const displayEvents = user?.user_role === 'educator' 
+    ? filteredEvents.filter(event => 
+        event.title?.toLowerCase().includes('class') || 
+        event.title?.toLowerCase().includes('lecture') ||
+        event.title?.toLowerCase().includes('assignment') ||
+        event.title?.toLowerCase().includes('course') ||
+        event.description?.toLowerCase().includes('academic') ||
+        event.description?.toLowerCase().includes('student')
+      )
+    : filteredEvents;
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Events</h1>
-          <p className="text-gray-600 mt-1">Manage your events and track attendance</p>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            {user?.user_role === 'educator' ? (
+              <GraduationCap className="h-8 w-8 text-purple-600" />
+            ) : (
+              <Calendar className="h-8 w-8 text-blue-600" />
+            )}
+            {user?.user_role === 'educator' ? 'Academic Events' : 'Events'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {user?.user_role === 'educator' 
+              ? 'Manage your classes, lectures, and academic activities'
+              : 'Manage your events and track attendance'
+            }
+          </p>
         </div>
-        <Button asChild className="bg-blue-600 hover:bg-blue-700">
+        <Button asChild className={user?.user_role === 'educator' ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'}>
           <Link to="/events/create" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            New Event
+            {user?.user_role === 'educator' ? 'Create Academic Event' : 'New Event'}
           </Link>
         </Button>
       </div>

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/StatsCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
+import EducatorDashboard from "@/components/educator/EducatorDashboard";
 import { 
   Search, 
   Users, 
@@ -13,13 +14,36 @@ import {
   TrendingUp, 
   Download, 
   FileText,
-  Crown
+  Crown,
+  GraduationCap
 } from "lucide-react";
 
 export default function Analytics() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // If user is educator, show educator-specific analytics
+  if (user?.user_role === 'educator') {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <GraduationCap className="h-8 w-8 text-purple-600" />
+              Academic Analytics
+            </h1>
+            <p className="text-gray-600 mt-1">Comprehensive insights into student performance and engagement</p>
+          </div>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export Academic Report
+          </Button>
+        </div>
+        <EducatorDashboard userRole="educator" />
+      </div>
+    );
+  }
   const [analytics, setAnalytics] = useState({
     totalAttendance: 250,
     averageCheckinTime: "10:30 AM",

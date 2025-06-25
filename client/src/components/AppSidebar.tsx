@@ -21,17 +21,34 @@ import {
   User
 } from 'lucide-react';
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Events', href: '/events', icon: Calendar },
-  { name: 'Templates', href: '/templates', icon: FileText },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Settings', href: '/settings', icon: Settings },
-];
+const getNavigation = (userRole?: string) => {
+  const baseNav = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  ];
+
+  if (userRole === 'educator') {
+    return [
+      ...baseNav,
+      { name: 'Academic Events', href: '/events', icon: Calendar },
+      { name: 'Course Templates', href: '/templates', icon: FileText },
+      { name: 'Academic Analytics', href: '/analytics', icon: BarChart3 },
+      { name: 'Settings', href: '/settings', icon: Settings },
+    ];
+  }
+
+  return [
+    ...baseNav,
+    { name: 'Events', href: '/events', icon: Calendar },
+    { name: 'Templates', href: '/templates', icon: FileText },
+    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Settings', href: '/settings', icon: Settings },
+  ];
+};
 
 export function AppSidebar() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const navigation = getNavigation(user?.user_role);
 
   const handleLogout = async () => {
     try {
