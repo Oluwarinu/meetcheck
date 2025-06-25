@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/StatsCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
-import { Plus, Calendar, Users, TrendingUp, Clock, Eye, QrCode } from "lucide-react";
+import IndustryDashboard from "@/components/industry/IndustryDashboard";
+import { Plus, Calendar, Users, TrendingUp, Clock, Eye, QrCode, Building2 } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -18,6 +19,10 @@ export default function Dashboard() {
     avgCheckinTime: 0
   });
   const [loading, setLoading] = useState(true);
+  const [showIndustryDashboard, setShowIndustryDashboard] = useState(true);
+  
+  // Mock user industry preference - in real app this would come from user profile
+  const userIndustryType = 'corporate' as 'corporate' | 'education' | 'networking';
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -74,6 +79,35 @@ export default function Dashboard() {
     }
   };
 
+  // Show industry-specific dashboard if enabled
+  if (showIndustryDashboard && userIndustryType && !loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowIndustryDashboard(false)}
+          >
+            Switch to Classic Dashboard
+          </Button>
+        </div>
+        <IndustryDashboard 
+          industryType={userIndustryType}
+          userRole="Training Manager"
+        />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   const recentEvents = events.slice(0, 3);
 
   return (
@@ -84,12 +118,22 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your events.</p>
         </div>
-        <Button asChild className="bg-blue-600 hover:bg-blue-700">
-          <Link to="/events/create" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Event
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowIndustryDashboard(true)}
+          >
+            <Building2 className="mr-2 h-4 w-4" />
+            Industry Dashboard
+          </Button>
+          <Button asChild className="bg-blue-600 hover:bg-blue-700">
+            <Link to="/events/create" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              New Event
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}

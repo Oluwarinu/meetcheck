@@ -10,6 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { apiClient } from '@/lib/api';
+import IndustryTemplateSelector from '@/components/industry/IndustryTemplateSelector';
+import SmartFieldConfiguration from '@/components/industry/SmartFieldConfiguration';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -42,6 +44,7 @@ interface EventFormData {
   flierFile: File | null;
   flierData: string | null;
   locationVerification: boolean;
+  industryType?: 'corporate' | 'education' | 'networking';
 }
 
 const DEFAULT_PARTICIPANT_FIELDS: ParticipantField[] = [
@@ -60,7 +63,7 @@ export default function CreateEvent() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0); // Start with industry selection
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
@@ -72,7 +75,8 @@ export default function CreateEvent() {
     participantFields: DEFAULT_PARTICIPANT_FIELDS,
     flierFile: null,
     flierData: null,
-    locationVerification: false
+    locationVerification: false,
+    industryType: undefined
   });
 
   const totalSteps = 7;
@@ -198,6 +202,23 @@ export default function CreateEvent() {
 
   const renderStep = () => {
     switch (currentStep) {
+      case 0:
+        return (
+          <div>
+            <IndustryTemplateSelector 
+              onSelectIndustry={handleIndustrySelect}
+              onSelectTemplate={(template) => {
+                updateFormData({ 
+                  industryType: template.category,
+                  title: template.name,
+                  description: template.description
+                });
+                setCurrentStep(1);
+              }}
+            />
+          </div>
+        );
+
       case 1:
         return (
           <div className="space-y-6">
@@ -306,65 +327,74 @@ export default function CreateEvent() {
         return (
           <div className="space-y-6">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Configure Participant Information Fields</h3>
-              <p className="text-gray-600">Select which information you want to collect from participants during registration.</p>
+              <h3 className="text-lg font-semibold mb-2">Participant Information Fields</h3>
+              <p className="text-gray-600">Industry-optimized fields with smart recommendations</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex gap-2 mb-4">
-                <Input
-                  placeholder="Add a custom field (e.g., Student ID)"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      addCustomField((e.target as HTMLInputElement).value);
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    const input = document.querySelector('input[placeholder*="custom field"]') as HTMLInputElement;
-                    if (input) {
-                      addCustomField(input.value);
-                      input.value = '';
-                    }
-                  }}
-                >
-                  Add Field
-                </Button>
-              </div>
+            {formData.industryType ? (
+              <SmartFieldConfiguration
+                industryType={formData.industryType}
+                fields={formData.participantFields}
+                onFieldToggle={toggleParticipantField}
+                onRequiredToggle={toggleFieldRequired}
+              />
+            ) : (
+              <div className="space-y-4">
+                <div className="flex gap-2 mb-4">
+                  <Input
+                    placeholder="Add a custom field (e.g., Student ID)"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        addCustomField((e.target as HTMLInputElement).value);
+                        (e.target as HTMLInputElement).value = '';
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const input = document.querySelector('input[placeholder*="custom field"]') as HTMLInputElement;
+                      if (input) {
+                        addCustomField(input.value);
+                        input.value = '';
+                      }
+                    }}
+                  >
+                    Add Field
+                  </Button>
+                </div>
 
-              <div className="space-y-3">
-                {formData.participantFields.map((field) => (
-                  <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        checked={field.enabled}
-                        onCheckedChange={(checked) => toggleParticipantField(field.id, checked as boolean)}
-                      />
-                      <span className="font-medium">{field.label}</span>
+                <div className="space-y-3">
+                  {formData.participantFields.map((field) => (
+                    <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          checked={field.enabled}
+                          onCheckedChange={(checked) => toggleParticipantField(field.id, checked as boolean)}
+                        />
+                        <span className="font-medium">{field.label}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {field.enabled && (
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={field.required}
+                              onCheckedChange={(checked) => toggleFieldRequired(field.id, checked as boolean)}
+                              disabled={field.id === 'fullName' || field.id === 'email'}
+                            />
+                            <span className="text-xs text-gray-600">Required</span>
+                          </div>
+                        )}
+                        {(field.id === 'fullName' || field.id === 'email') && (
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Required</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      {field.enabled && (
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={field.required}
-                            onCheckedChange={(checked) => toggleFieldRequired(field.id, checked as boolean)}
-                            disabled={field.id === 'fullName' || field.id === 'email'} // Keep these always required
-                          />
-                          <span className="text-xs text-gray-600">Required</span>
-                        </div>
-                      )}
-                      {(field.id === 'fullName' || field.id === 'email') && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Required</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         );
 
@@ -544,8 +574,15 @@ export default function CreateEvent() {
           <span>New Event</span>
         </div>
 
-        <h1 className="text-2xl font-bold mb-2">Step {currentStep} of {totalSteps}</h1>
-        <Progress value={progress} className="h-2" />
+        {currentStep > 0 && (
+          <>
+            <h1 className="text-2xl font-bold mb-2">Step {currentStep} of {totalSteps}</h1>
+            <Progress value={progress} className="h-2" />
+          </>
+        )}
+        {currentStep === 0 && (
+          <h1 className="text-2xl font-bold mb-2">Choose Your Event Type</h1>
+        )}
       </div>
 
       {/* Step Content */}
@@ -559,14 +596,14 @@ export default function CreateEvent() {
       <div className="flex justify-between mt-6">
         <Button
           variant="outline"
-          onClick={handlePrevious}
-          disabled={currentStep === 1}
+          onClick={handleBack}
+          disabled={currentStep === 0}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Previous
+          {currentStep === 0 ? 'Cancel' : 'Previous'}
         </Button>
 
-        {currentStep === totalSteps ? (
+        {currentStep === 0 ? null : currentStep === totalSteps ? (
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || !formData.title || !formData.date || !formData.location}
