@@ -47,8 +47,8 @@ const DEFAULT_PARTICIPANT_FIELDS: ParticipantField[] = [
   { id: 'fullName', label: 'Full Name', type: 'text', required: true, enabled: true },
   { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true },
   { id: 'phone', label: 'Phone Number', type: 'tel', required: false, enabled: false },
-  { id: 'registrationNumber', label: 'Registration Number', type: 'text', required: false, enabled: false },
-  { id: 'gender', label: 'Gender', type: 'select', required: false, enabled: false },
+  { id: 'registrationNumber', label: 'Registration Number', type: 'text', required: false, enabled: true },
+  { id: 'gender', label: 'Gender', type: 'select', required: false, enabled: true },
   { id: 'organization', label: 'Organization', type: 'text', required: false, enabled: false },
   { id: 'position', label: 'Position/Title', type: 'text', required: false, enabled: false },
   { id: 'dietaryRequirements', label: 'Dietary Requirements', type: 'textarea', required: false, enabled: false },
@@ -144,10 +144,10 @@ export default function CreateEvent() {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit to prevent payload issues
         toast({
           title: "File Too Large",
-          description: "Please choose a file smaller than 5MB.",
+          description: "Please choose a file smaller than 2MB.",
           variant: "destructive"
         });
         return;
@@ -167,6 +167,13 @@ export default function CreateEvent() {
   const toggleParticipantField = (fieldId: string, enabled: boolean) => {
     const updatedFields = formData.participantFields.map(field =>
       field.id === fieldId ? { ...field, enabled } : field
+    );
+    updateFormData({ participantFields: updatedFields });
+  };
+
+  const toggleFieldRequired = (fieldId: string, required: boolean) => {
+    const updatedFields = formData.participantFields.map(field =>
+      field.id === fieldId ? { ...field, required } : field
     );
     updateFormData({ participantFields: updatedFields });
   };
@@ -338,7 +345,17 @@ export default function CreateEvent() {
                       <span className="font-medium">{field.label}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      {field.required && (
+                      {field.enabled && (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={field.required}
+                            onCheckedChange={(checked) => toggleFieldRequired(field.id, checked as boolean)}
+                            disabled={field.id === 'fullName' || field.id === 'email'} // Keep these always required
+                          />
+                          <span className="text-xs text-gray-600">Required</span>
+                        </div>
+                      )}
+                      {(field.id === 'fullName' || field.id === 'email') && (
                         <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Required</span>
                       )}
                     </div>
@@ -385,7 +402,7 @@ export default function CreateEvent() {
                         Drag and drop your flier here, or click to browse
                       </p>
                       <p className="text-xs text-gray-500">
-                        Supports PNG, JPG, JPEG, GIF, WebP • Max size 5MB
+                        Supports PNG, JPG, JPEG, GIF, WebP • Max size 2MB
                       </p>
                     </div>
                     <div>

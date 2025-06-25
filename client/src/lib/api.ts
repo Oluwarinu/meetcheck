@@ -98,13 +98,6 @@ class ApiClient {
     return this.request<any>(`/public/events/${id}`);
   }
 
-  async submitPublicCheckIn(eventId: string, checkInData: any): Promise<any> {
-    return this.request<any>(`/public/events/${eventId}/checkin`, {
-      method: 'POST',
-      body: JSON.stringify(checkInData),
-    });
-  }
-
   async getEventParticipants(eventId: string): Promise<any[]> {
     return this.request<any[]>(`/events/${eventId}/participants`);
   }
