@@ -38,6 +38,8 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/resources" element={<Resources />} />
                 <Route path="/checkin/:eventId" element={<PublicCheckIn />} />
                 
                 {/* Protected Routes with App Layout */}
@@ -51,8 +53,6 @@ function App() {
                   <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                   <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-                  <Route path="/pricing" element={<ProtectedRoute><Pricing /></ProtectedRoute>} />
-                  <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
                   <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
                 </Route>
                 
