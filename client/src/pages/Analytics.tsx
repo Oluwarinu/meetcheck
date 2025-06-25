@@ -44,74 +44,7 @@ export default function Analytics() {
       </div>
     );
   }
-  const [analytics, setAnalytics] = useState({
-    totalAttendance: 250,
-    averageCheckinTime: "10:30 AM",
-    uniqueAttendees: 200,
-    attendanceTrends: [
-      { week: "Week 1", attendees: 180 },
-      { week: "Week 2", attendees: 210 },
-      { week: "Week 3", attendees: 200 },
-      { week: "Week 4", attendees: 250 }
-    ]
-  });
 
-  const sessionData = [
-    {
-      session: "Session 1: Keynote",
-      startTime: "9:00 AM",
-      endTime: "10:00 AM", 
-      attendees: 150,
-      checkinRate: 80
-    },
-    {
-      session: "Session 2: Workshop",
-      startTime: "11:00 AM",
-      endTime: "12:00 PM",
-      attendees: 100, 
-      checkinRate: 75
-    },
-    {
-      session: "Session 3: Networking",
-      startTime: "1:00 PM",
-      endTime: "2:00 PM",
-      attendees: 80,
-      checkinRate: 60
-    }
-  ];
-
-  const upgradeFeatures = [
-    {
-      name: "Advanced Reports",
-      description: "Access detailed event analytics with custom metrics",
-      currentPlan: "Freemium",
-      requiredPlan: "Professional"
-    },
-    {
-      name: "Advanced Analytics", 
-      description: "Real-time dashboards, funnel analysis, and segmentation",
-      currentPlan: "Freemium",
-      requiredPlan: "Professional"
-    }
-  ];
-
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      if (!user) return;
-      try {
-        setLoading(true);
-        // In a real app, fetch analytics data here
-        // const data = await apiClient.getAnalytics();
-        // setAnalytics(data);
-      } catch (error) {
-        console.error("Failed to fetch analytics:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAnalytics();
-  }, [user]);
 
   return (
     <div className="space-y-6">

@@ -28,9 +28,7 @@ export default function Dashboard() {
                           userRole === 'training_manager' ? 'corporate' : 
                           userRole === 'hr_leader' ? 'corporate' : 'networking';
 
-  console.log('Dashboard - User:', user);
-  console.log('Dashboard - User Role:', userRole);
-  console.log('Dashboard - Loading:', loading);
+
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -117,7 +115,7 @@ export default function Dashboard() {
 
   // If no role selected, redirect to role selection
   if (!userRole && !loading) {
-    console.log('No user role, redirecting to role selection');
+
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="max-w-md w-full text-center">

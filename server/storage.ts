@@ -84,15 +84,11 @@ export class PostgresStorage implements IStorage {
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
     try {
-      console.log('Storage updateUser - ID:', id);
-      console.log('Storage updateUser - Updates:', updates);
-      
       const result = await db.update(users)
         .set({ ...updates, updated_at: new Date() })
         .where(eq(users.id, id))
         .returning();
         
-      console.log('Storage updateUser - Result:', result[0]);
       return result[0];
     } catch (error) {
       console.error('Storage updateUser - Error:', error);

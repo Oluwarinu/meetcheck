@@ -100,13 +100,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/auth/profile', authenticateToken, async (req, res) => {
     try {
-      console.log('PUT /api/auth/profile - User ID:', req.user.id);
-      console.log('PUT /api/auth/profile - Updates:', req.body);
-      
       const updates = req.body;
       const updatedUser = await storage.updateUser(req.user.id, updates);
-      
-      console.log('PUT /api/auth/profile - Updated user:', updatedUser);
       
       if (!updatedUser) {
         return res.status(404).json({ error: 'User not found' });
@@ -114,7 +109,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ ...updatedUser, password: undefined });
     } catch (error: any) {
-      console.error('PUT /api/auth/profile - Error:', error);
       res.status(500).json({ error: error.message });
     }
   });
