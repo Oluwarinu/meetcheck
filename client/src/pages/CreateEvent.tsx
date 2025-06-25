@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiClient } from '@/lib/api';
 import IndustryTemplateSelector from '@/components/industry/IndustryTemplateSelector';
 import SmartFieldConfiguration from '@/components/industry/SmartFieldConfiguration';
+import EducatorTemplates from '@/components/educator/EducatorTemplates';
 import { 
   ArrowLeft, 
   ArrowRight, 
@@ -92,10 +93,35 @@ export default function CreateEvent() {
     }
   };
 
-  const handlePrevious = () => {
-    if (currentStep > 1) {
+  const handleBack = () => {
+    if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const handleIndustrySelect = (industry: 'corporate' | 'education' | 'networking') => {
+    updateFormData({ industryType: industry });
+    setCurrentStep(1);
+  };
+
+  const handleEducatorTemplateSelect = (template: any) => {
+    // Convert educator template to event form data
+    const participantFields = template.fields.map((field: any) => ({
+      id: field.name.toLowerCase().replace(/ /g, '_'),
+      label: field.name,
+      type: field.type === 'select' ? 'dropdown' : 'text',
+      required: field.required,
+      enabled: true,
+      options: field.options || []
+    }));
+    
+    updateFormData({ 
+      industryType: 'education',
+      title: template.name,
+      description: template.purpose,
+      participantFields: [...DEFAULT_PARTICIPANT_FIELDS, ...participantFields]
+    });
+    setCurrentStep(1);
   };
 
   const handleSubmit = async () => {
@@ -203,6 +229,15 @@ export default function CreateEvent() {
   const renderStep = () => {
     switch (currentStep) {
       case 0:
+        // Show educator templates if user is educator, otherwise show industry selector
+        if (user?.user_role === 'educator') {
+          return (
+            <div>
+              <EducatorTemplates onSelectTemplate={handleEducatorTemplateSelect} />
+            </div>
+          );
+        }
+        
         return (
           <div>
             <IndustryTemplateSelector 

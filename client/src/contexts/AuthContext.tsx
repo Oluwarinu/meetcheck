@@ -6,6 +6,9 @@ interface User {
   email: string;
   full_name: string;
   avatar_url?: string;
+  user_role?: 'training_manager' | 'hr_leader' | 'educator' | 'event_organizer';
+  organization?: string;
+  department?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -15,6 +18,9 @@ interface UserProfile {
   email: string;
   full_name: string;
   avatar_url?: string;
+  user_role?: 'training_manager' | 'hr_leader' | 'educator' | 'event_organizer';
+  organization?: string;
+  department?: string;
   created_at?: string;
   updated_at?: string;
 }

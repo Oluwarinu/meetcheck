@@ -7,6 +7,7 @@ import { StatsCard } from "@/components/StatsCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
 import IndustryDashboard from "@/components/industry/IndustryDashboard";
+import EducatorDashboard from "@/components/educator/EducatorDashboard";
 import { Plus, Calendar, Users, TrendingUp, Clock, Eye, QrCode, Building2 } from "lucide-react";
 
 export default function Dashboard() {
@@ -19,10 +20,13 @@ export default function Dashboard() {
     avgCheckinTime: 0
   });
   const [loading, setLoading] = useState(true);
-  const [showIndustryDashboard, setShowIndustryDashboard] = useState(true);
+  const [showIndustryDashboard, setShowIndustryDashboard] = useState(false);
   
-  // Mock user industry preference - in real app this would come from user profile
-  const userIndustryType = 'corporate' as 'corporate' | 'education' | 'networking';
+  // Get user role from user profile
+  const userRole = user?.user_role;
+  const userIndustryType = userRole === 'educator' ? 'education' : 
+                          userRole === 'training_manager' ? 'corporate' : 
+                          userRole === 'hr_leader' ? 'corporate' : 'networking';
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -79,23 +83,50 @@ export default function Dashboard() {
     }
   };
 
-  // Show industry-specific dashboard if enabled
-  if (showIndustryDashboard && userIndustryType && !loading) {
+  // Show role-specific dashboard by default if user has a role
+  if (userRole && !loading) {
+    if (userRole === 'educator') {
+      return <EducatorDashboard userRole={userRole} />;
+    }
+    
+    if (showIndustryDashboard && userIndustryType) {
+      return (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowIndustryDashboard(false)}
+            >
+              Switch to Classic Dashboard
+            </Button>
+          </div>
+          <IndustryDashboard 
+            industryType={userIndustryType}
+            userRole={userRole === 'training_manager' ? 'Training Manager' : 
+                     userRole === 'hr_leader' ? 'HR Leader' : 'Event Organizer'}
+          />
+        </div>
+      );
+    }
+  }
+
+  // If no role selected, redirect to role selection
+  if (!userRole && !loading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowIndustryDashboard(false)}
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="max-w-md w-full text-center">
+          <h2 className="text-2xl font-bold mb-4">Welcome to MeetCheck!</h2>
+          <p className="text-gray-600 mb-6">
+            To get started, please select your role to access customized features and templates.
+          </p>
+          <Button 
+            onClick={() => window.location.href = '/role-selection'}
+            className="w-full"
           >
-            Switch to Classic Dashboard
+            Choose Your Role
           </Button>
         </div>
-        <IndustryDashboard 
-          industryType={userIndustryType}
-          userRole="Training Manager"
-        />
       </div>
     );
   }
@@ -119,14 +150,16 @@ export default function Dashboard() {
           <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your events.</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowIndustryDashboard(true)}
-          >
-            <Building2 className="mr-2 h-4 w-4" />
-            Industry Dashboard
-          </Button>
+          {userRole && userRole !== 'educator' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowIndustryDashboard(true)}
+            >
+              <Building2 className="mr-2 h-4 w-4" />
+              Industry Dashboard
+            </Button>
+          )}
           <Button asChild className="bg-blue-600 hover:bg-blue-700">
             <Link to="/events/create" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />

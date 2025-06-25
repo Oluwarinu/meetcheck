@@ -9,6 +9,9 @@ export const users = pgTable("users", {
   full_name: text("full_name"),
   phone: text("phone"),
   avatar_url: text("avatar_url"),
+  user_role: text("user_role", { enum: ["training_manager", "hr_leader", "educator", "event_organizer"] }),
+  organization: text("organization"),
+  department: text("department"),
   created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import EducatorTemplates from "@/components/educator/EducatorTemplates";
 import { Search, GraduationCap, Heart, Building, Users, Clock, User } from "lucide-react";
 
 const templateCategories = [
@@ -67,6 +69,22 @@ const eventTemplates = [
 export default function Templates() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const { user } = useAuth();
+  const userRole = user?.user_role;
+
+  const handleUseTemplate = (template: any) => {
+    console.log('Using template:', template);
+    // Navigate to create event with template pre-filled
+  };
+
+  // Show educator-specific templates if user is an educator
+  if (userRole === 'educator') {
+    return (
+      <div className="max-w-6xl mx-auto p-6">
+        <EducatorTemplates onSelectTemplate={handleUseTemplate} />
+      </div>
+    );
+  }
 
   const filteredTemplates = eventTemplates.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

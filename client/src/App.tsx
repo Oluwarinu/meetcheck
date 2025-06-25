@@ -25,6 +25,7 @@ import Templates from './pages/Templates';
 import Upgrade from './pages/Upgrade';
 import ForgotPassword from './pages/ForgotPassword';
 import NotFound from './pages/NotFound';
+import RoleSelection from './pages/RoleSelection';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/role-selection" element={<ProtectedRoute><RoleSelection /></ProtectedRoute>} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/resources" element={<Resources />} />
                 <Route path="/checkin/:eventId" element={<PublicCheckIn />} />
