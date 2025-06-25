@@ -49,7 +49,7 @@ const DEFAULT_PARTICIPANT_FIELDS: ParticipantField[] = [
   { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true, options: [] },
   { id: 'phone', label: 'Phone Number', type: 'tel', required: false, enabled: false, options: [] },
   { id: 'registrationNumber', label: 'Registration Number', type: 'text', required: false, enabled: true, options: [] },
-  { id: 'gender', label: 'Gender', type: 'select', required: false, enabled: true, options: ['Male', 'Female', 'Other', 'Prefer not to say'] },
+  { id: 'gender', label: 'Gender', type: 'select', required: false, enabled: true, options: ['Male', 'Female'] },
   { id: 'organization', label: 'Organization', type: 'text', required: false, enabled: false, options: [] },
   { id: 'position', label: 'Position/Title', type: 'text', required: false, enabled: false, options: [] },
   { id: 'dietaryRequirements', label: 'Dietary Requirements', type: 'textarea', required: false, enabled: false, options: [] },

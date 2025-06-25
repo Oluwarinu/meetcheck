@@ -129,7 +129,7 @@ The system uses a simple user-based schema with plans for expansion:
   - Confirmed all 10 database tables properly configured and operational
   - Application fully tested and production-ready after Supabase migration
 - June 25, 2025: Participant Field Configuration & Location Verification Enhancements
-  - Added gender dropdown options (Male, Female, Other, Prefer not to say) for participant fields
+  - Added gender dropdown options (Male, Female) for participant fields
   - Enhanced participant information step to allow marking fields as required
   - Implemented location verification enforcement preventing check-in without location access
   - Added clear status indicators for location verification states (requesting, granted, denied)
