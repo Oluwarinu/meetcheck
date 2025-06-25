@@ -12,18 +12,33 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2 flex-shrink-0">
+          <Link to="/" className="flex items-center space-x-2 flex-shrink-0 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
               <CheckCircle className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
               MeetCheck
             </span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Features</a>
+            <a 
+              href="#features" 
+              className="text-gray-600 hover:text-blue-600 font-medium transition-colors cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                const featuresSection = document.getElementById('features');
+                if (featuresSection) {
+                  featuresSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                  // If not on homepage, navigate to homepage then scroll
+                  window.location.href = '/#features';
+                }
+              }}
+            >
+              Features
+            </a>
             <Link to="/pricing" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Pricing</Link>
             <Link to="/resources" className="text-gray-600 hover:text-blue-600 font-medium transition-colors">Resources</Link>
           </nav>
@@ -53,8 +68,18 @@ export default function Header() {
             <div className="px-4 py-4 space-y-4">
               <a 
                 href="#features" 
-                className="block text-gray-600 hover:text-blue-600 font-medium py-2 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
+                className="block text-gray-600 hover:text-blue-600 font-medium py-2 transition-colors cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsMenuOpen(false);
+                  const featuresSection = document.getElementById('features');
+                  if (featuresSection) {
+                    featuresSection.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    // If not on homepage, navigate to homepage then scroll
+                    window.location.href = '/#features';
+                  }
+                }}
               >
                 Features
               </a>

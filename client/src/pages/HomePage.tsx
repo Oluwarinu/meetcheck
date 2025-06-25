@@ -27,7 +27,9 @@ export default function HomePage() {
         </div>
       </section>
 
-      <FeaturesSection />
+      <div id="features">
+        <FeaturesSection />
+      </div>
       <CTASection />
       <Footer />
     </div>

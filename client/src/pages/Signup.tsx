@@ -50,12 +50,12 @@ export default function Signup() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center space-x-2 mb-8">
+        <Link to="/" className="flex items-center justify-center space-x-2 mb-8 hover:opacity-80 transition-opacity">
           <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
             <CheckCircle className="h-6 w-6 text-white" />
           </div>
           <span className="text-2xl font-bold text-gray-900">MeetCheck</span>
-        </div>
+        </Link>
 
         <Card className="border-0 shadow-xl">
           <CardHeader className="text-center pb-6">
