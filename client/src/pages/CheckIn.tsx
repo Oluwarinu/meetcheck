@@ -1,7 +1,4 @@
-` tags.
 
-```xml
-<replit_final_file>
 import React, { useState, useEffect } from 'react';
 import { QrCode, MapPin, Clock, Users, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
