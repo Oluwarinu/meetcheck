@@ -90,10 +90,10 @@ export default function Events() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
-          <TabsTrigger value="all">All Events</TabsTrigger>
-          <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto sm:max-w-lg lg:w-[400px]">
+          <TabsTrigger value="all" className="text-xs sm:text-sm">All Events</TabsTrigger>
+          <TabsTrigger value="upcoming" className="text-xs sm:text-sm">Upcoming</TabsTrigger>
+          <TabsTrigger value="completed" className="text-xs sm:text-sm">Completed</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-6">

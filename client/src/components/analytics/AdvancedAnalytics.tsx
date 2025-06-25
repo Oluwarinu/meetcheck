@@ -29,6 +29,7 @@ import {
   CheckCircle,
   RefreshCw
 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const realTimeData = [
   { time: '10:00', checkIns: 45, expectedCheckIns: 50 },

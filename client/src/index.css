@@ -102,4 +102,43 @@
   .bg-meetcheck-light-blue {
     background-color: hsl(var(--meetcheck-light-blue));
   }
+
+  /* Mobile-optimized utilities */
+  .mobile-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  .mobile-text-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .mobile-text-lg {
+    @apply text-lg sm:text-xl lg:text-2xl;
+  }
+  
+  .mobile-button {
+    @apply w-full sm:w-auto px-6 py-3 text-base font-medium;
+  }
+  
+  .mobile-card {
+    @apply mx-4 sm:mx-0;
+  }
+  
+  .mobile-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+  }
+  
+  .mobile-flex-col {
+    @apply flex flex-col sm:flex-row gap-4;
+  }
+  
+  /* Smooth scrolling and better touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* Better focus states for accessibility */
+  .focus-visible-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2;
+  }
 }

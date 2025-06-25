@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { MapPin, Clock, Globe, Shield } from "lucide-react";
+import { MapPin, Clock, Globe, Shield, Smartphone, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
