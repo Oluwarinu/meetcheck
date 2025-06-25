@@ -113,22 +113,8 @@ export default function Dashboard() {
 
   // If no role selected, redirect to role selection
   if (!userRole && !loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="max-w-md w-full text-center">
-          <h2 className="text-2xl font-bold mb-4">Welcome to MeetCheck!</h2>
-          <p className="text-gray-600 mb-6">
-            To get started, please select your role to access customized features and templates.
-          </p>
-          <Button 
-            onClick={() => window.location.href = '/role-selection'}
-            className="w-full"
-          >
-            Choose Your Role
-          </Button>
-        </div>
-      </div>
-    );
+    window.location.href = '/role-selection';
+    return null;
   }
 
   if (loading) {

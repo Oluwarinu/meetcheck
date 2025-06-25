@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { apiClient } from '@/lib/api';
 import { 
   GraduationCap, 
   Users, 
@@ -65,6 +64,18 @@ export default function RoleSelection() {
   const { user, updateProfile } = useAuth();
   const { toast } = useToast();
 
+  // Redirect to login if not authenticated
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
+
+  // If user already has a role, redirect to dashboard
+  if (user.user_role) {
+    navigate('/dashboard');
+    return null;
+  }
+
   const handleRoleSelect = async (roleId: Role['id']) => {
     try {
       await updateProfile({ user_role: roleId });
@@ -76,6 +87,7 @@ export default function RoleSelection() {
 
       navigate('/dashboard');
     } catch (error) {
+      console.error('Failed to update role:', error);
       toast({
         title: "Error",
         description: "Failed to update your role. Please try again.",
