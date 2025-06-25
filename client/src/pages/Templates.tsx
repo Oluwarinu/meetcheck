@@ -1,234 +1,192 @@
-
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { useNavigate } from "react-router-dom";
-import { 
-  GraduationCap, 
-  Users, 
-  Calendar, 
-  User, 
-  Search,
-  Clock,
-  MapPin,
-  UserCheck
-} from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Search, GraduationCap, Heart, Building, Users, Clock, User } from "lucide-react";
+
+const templateCategories = [
+  { id: "all", name: "All", icon: null },
+  { id: "education", name: "Education", icon: GraduationCap },
+  { id: "celebration", name: "Celebration", icon: Heart },
+  { id: "business", name: "Business", icon: Building },
+  { id: "training", name: "Training", icon: Users }
+];
 
 const eventTemplates = [
   {
-    id: "lecture",
-    title: "Academic Lecture",
+    id: "academic-lecture",
+    name: "Academic Lecture",
     description: "Perfect for university lectures, seminars, and academic presentations",
+    category: "education",
+    maxAttendees: 150,
+    duration: "1-2 hours",
+    features: ["Student attendance tracking", "Registration number field", "Department/Course information"],
+    fields: ["Full Name", "Email Address", "Student ID", "+1 more"],
     icon: GraduationCap,
-    color: "bg-blue-500",
-    category: "Education",
-    features: [
-      "Student attendance tracking",
-      "Registration number field",
-      "Department/Course information",
-      "Presenter details"
-    ],
-    participantFields: [
-      { id: "name", label: "Full Name", required: true },
-      { id: "email", label: "Email Address", required: true },
-      { id: "registration", label: "Student ID", required: true },
-      { id: "course", label: "Course/Department", required: false },
-    ],
-    capacity: 150,
-    duration: "1-2 hours"
+    color: "blue"
   },
   {
-    id: "wedding",
-    title: "Wedding Celebration",
+    id: "wedding-celebration",
+    name: "Wedding Celebration",
     description: "Elegant template for wedding ceremonies and receptions",
-    icon: Users,
-    color: "bg-pink-500",
-    category: "Celebration",
-    features: [
-      "RSVP management",
-      "Dietary requirements",
-      "Plus-one tracking",
-      "Seating arrangements"
-    ],
-    participantFields: [
-      { id: "name", label: "Full Name", required: true },
-      { id: "email", label: "Email Address", required: true },
-      { id: "phone", label: "Phone Number", required: true },
-      { id: "dietary", label: "Dietary Requirements", required: false },
-      { id: "plusone", label: "Plus One", required: false },
-    ],
-    capacity: 200,
-    duration: "4-6 hours"
+    category: "celebration",
+    maxAttendees: 200,
+    duration: "4-6 hours",
+    features: ["RSVP management", "Dietary requirements", "Plus-one tracking"],
+    fields: ["Full Name", "Email Address", "Phone Number", "+2 more"],
+    icon: Heart,
+    color: "pink"
   },
   {
-    id: "conference",
-    title: "Business Conference",
+    id: "business-conference",
+    name: "Business Conference",
     description: "Professional template for conferences, workshops, and corporate events",
-    icon: Calendar,
-    color: "bg-green-500",
-    category: "Business",
-    features: [
-      "Company information",
-      "Job title tracking",
-      "Networking facilitation",
-      "Badge generation"
-    ],
-    participantFields: [
-      { id: "name", label: "Full Name", required: true },
-      { id: "email", label: "Email Address", required: true },
-      { id: "organization", label: "Company/Organization", required: true },
-      { id: "position", label: "Job Title", required: true },
-      { id: "phone", label: "Phone Number", required: false },
-    ],
-    capacity: 300,
-    duration: "1-3 days"
+    category: "business",
+    maxAttendees: 300,
+    duration: "1-3 days",
+    features: ["Company information", "Job title tracking", "Networking facilitation"],
+    fields: ["Full Name", "Email Address", "Company/Organization", "+2 more"],
+    icon: Building,
+    color: "green"
   },
   {
-    id: "workshop",
-    title: "Workshop/Training",
+    id: "workshop-training",
+    name: "Workshop/Training",
     description: "Interactive template for workshops, training sessions, and skill-building events",
-    icon: User,
-    color: "bg-purple-500",
-    category: "Training",
-    features: [
-      "Skill level tracking",
-      "Prerequisites check",
-      "Material requirements",
-      "Certification tracking"
-    ],
-    participantFields: [
-      { id: "name", label: "Full Name", required: true },
-      { id: "email", label: "Email Address", required: true },
-      { id: "phone", label: "Phone Number", required: false },
-      { id: "experience", label: "Experience Level", required: false },
-      { id: "organization", label: "Organization", required: false },
-    ],
-    capacity: 50,
-    duration: "2-8 hours"
+    category: "training",
+    maxAttendees: 50,
+    duration: "Half/Full day",
+    features: ["Skill level tracking", "Pre-training survey", "Certificate generation"],
+    fields: ["Full Name", "Email Address", "Experience Level", "+1 more"],
+    icon: Users,
+    color: "purple"
   }
 ];
 
 export default function Templates() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const navigate = useNavigate();
-
-  const categories = ["All", ...Array.from(new Set(eventTemplates.map(t => t.category)))];
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const filteredTemplates = eventTemplates.filter(template => {
-    const matchesSearch = template.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = template.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          template.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "All" || template.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || template.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const handleUseTemplate = (template: typeof eventTemplates[0]) => {
-    // Remove the icon component from template data to avoid cloning issues
-    const { icon, ...templateData } = template;
-    navigate("/create-event", { state: { template: templateData } });
+  const getColorClasses = (color: string) => {
+    const colors = {
+      blue: "bg-blue-50 border-blue-200 text-blue-700",
+      pink: "bg-pink-50 border-pink-200 text-pink-700", 
+      green: "bg-green-50 border-green-200 text-green-700",
+      purple: "bg-purple-50 border-purple-200 text-purple-700"
+    };
+    return colors[color as keyof typeof colors] || colors.blue;
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Event Templates</h1>
-          <p className="text-gray-600 mt-2">
-            Choose from our pre-designed templates to quickly create your event
-          </p>
-        </div>
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Event Templates</h1>
+        <p className="text-gray-600 mt-1">Choose from our pre-designed templates to quickly create your event</p>
+      </div>
 
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search templates..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            {categories.map(category => (
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search templates..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="flex gap-2 overflow-x-auto">
+          {templateCategories.map((category) => {
+            const Icon = category.icon;
+            return (
               <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                onClick={() => setSelectedCategory(category)}
-                className="text-sm"
+                key={category.id}
+                variant={selectedCategory === category.id ? "default" : "outline"}
+                onClick={() => setSelectedCategory(category.id)}
+                className="whitespace-nowrap"
               >
-                {category}
+                {Icon && <Icon className="h-4 w-4 mr-2" />}
+                {category.name}
               </Button>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Templates Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredTemplates.map((template) => {
-          const IconComponent = template.icon;
+          const Icon = template.icon;
           return (
-            <Card key={template.id} className="hover:shadow-lg transition-shadow duration-200">
-              <CardHeader className="pb-4">
+            <Card key={template.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
                 <div className="flex items-start justify-between">
-                  <div className={`p-3 rounded-lg ${template.color} bg-opacity-10`}>
-                    <IconComponent className={`h-6 w-6 ${template.color.replace('bg-', 'text-')}`} />
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${getColorClasses(template.color)}`}>
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-lg">{template.name}</CardTitle>
+                      <Badge variant="secondary" className="mt-1 capitalize">
+                        {template.category}
+                      </Badge>
+                    </div>
                   </div>
-                  <Badge variant="secondary" className="text-xs">
-                    {template.category}
-                  </Badge>
                 </div>
-                <CardTitle className="text-lg">{template.title}</CardTitle>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <CardDescription className="mt-3">
                   {template.description}
-                </p>
+                </CardDescription>
               </CardHeader>
               
               <CardContent className="space-y-4">
+                {/* Template Stats */}
                 <div className="flex items-center gap-4 text-sm text-gray-600">
                   <div className="flex items-center gap-1">
-                    <UserCheck className="h-4 w-4" />
-                    <span>{template.capacity} max</span>
+                    <User className="h-3 w-3" />
+                    {template.maxAttendees} max
                   </div>
                   <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    <span>{template.duration}</span>
+                    <Clock className="h-3 w-3" />
+                    {template.duration}
                   </div>
                 </div>
 
+                {/* Key Features */}
                 <div>
-                  <h4 className="font-medium text-sm mb-2">Key Features:</h4>
-                  <ul className="space-y-1">
-                    {template.features.slice(0, 3).map((feature, index) => (
-                      <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Key Features:</p>
+                  <ul className="text-sm text-gray-600 space-y-1">
+                    {template.features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-gray-400 rounded-full" />
                         {feature}
                       </li>
                     ))}
                   </ul>
                 </div>
 
+                {/* Participant Fields */}
                 <div>
-                  <h4 className="font-medium text-sm mb-2">Participant Fields:</h4>
+                  <p className="text-sm font-medium text-gray-700 mb-2">Participant Fields:</p>
                   <div className="flex flex-wrap gap-1">
-                    {template.participantFields.slice(0, 3).map((field, index) => (
+                    {template.fields.map((field, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
-                        {field.label}
+                        {field}
                       </Badge>
                     ))}
-                    {template.participantFields.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{template.participantFields.length - 3} more
-                      </Badge>
-                    )}
                   </div>
                 </div>
 
-                <Button 
-                  onClick={() => handleUseTemplate(template)}
-                  className="w-full mt-4"
-                >
+                {/* Action Button */}
+                <Button className="w-full bg-blue-600 hover:bg-blue-700">
                   Use This Template
                 </Button>
               </CardContent>
@@ -239,11 +197,11 @@ export default function Templates() {
 
       {filteredTemplates.length === 0 && (
         <div className="text-center py-12">
-          <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <div className="text-gray-400 mb-4">
+            <Search className="h-12 w-12 mx-auto" />
+          </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
-          <p className="text-gray-600">
-            Try adjusting your search terms or category filter
-          </p>
+          <p className="text-gray-600">Try adjusting your search terms or category filter.</p>
         </div>
       )}
     </div>

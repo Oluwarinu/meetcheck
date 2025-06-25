@@ -1,107 +1,100 @@
-
-import React from "react";
-import { Calendar, Home, Settings, BarChart3, FileText, LogOut } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarFooter,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/sidebar';
+import {
+  LayoutDashboard,
+  Calendar,
+  FileText,
+  BarChart3,
+  Settings,
+  CheckCircle,
+  LogOut,
+  User
+} from 'lucide-react';
 
-const menuItems = [
-  {
-    title: "Dashboard",
-    url: "/dashboard",
-    icon: Home,
-  },
-  {
-    title: "Events",
-    url: "/events",
-    icon: Calendar,
-  },
-  {
-    title: "Templates",
-    url: "/templates",
-    icon: FileText,
-  },
-  {
-    title: "Analytics",
-    url: "/analytics",
-    icon: BarChart3,
-  },
-  {
-    title: "Settings",
-    url: "/settings",
-    icon: Settings,
-  },
+const navigation = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Events', href: '/events', icon: Calendar },
+  { name: 'Templates', href: '/templates', icon: FileText },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
   const location = useLocation();
-  const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
-  const handleLogout = () => {
-    console.log("User logged out");
-    // Clear any stored auth data here if needed
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
   return (
-    <Sidebar className="border-r border-border">
-      <SidebarHeader className="p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-meetcheck-blue rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">M</span>
-            </div>
-            <span className="font-semibold text-lg">MeetCheck</span>
+    <Sidebar className="border-r">
+      <SidebarHeader className="border-b px-6 py-4">
+        <Link to="/dashboard" className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <CheckCircle className="h-5 w-5 text-white" />
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handleLogout}
-            className="h-8 w-8 text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
-            title="Logout"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
+          <span className="font-bold text-lg text-gray-900">MeetCheck</span>
+        </Link>
+        <p className="text-xs text-gray-500 mt-1">Application</p>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-muted-foreground px-6 pb-2">
-            Application
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    className={cn(
-                      "mx-3 rounded-lg transition-colors",
-                      location.pathname === item.url && "bg-meetcheck-light-blue text-meetcheck-blue"
-                    )}
-                  >
-                    <Link to={item.url} className="flex items-center gap-3 px-3 py-2">
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      
+      <SidebarContent className="px-4 py-4">
+        <SidebarMenu>
+          {navigation.map((item) => {
+            const isActive = location.pathname === item.href || 
+                           (item.href !== '/dashboard' && location.pathname.startsWith(item.href));
+            return (
+              <SidebarMenuItem key={item.name}>
+                <SidebarMenuButton asChild isActive={isActive}>
+                  <Link to={item.href} className="flex items-center gap-3">
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.name}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
       </SidebarContent>
+
+      <SidebarFooter className="border-t px-4 py-4">
+        <SidebarMenu>
+          {user && (
+            <SidebarMenuItem>
+              <div className="flex items-center gap-3 px-3 py-2 text-sm">
+                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <User className="h-4 w-4 text-gray-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 truncate">{user.full_name}</p>
+                  <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                </div>
+              </div>
+            </SidebarMenuItem>
+          )}
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleLogout} className="w-full">
+              <LogOut className="h-4 w-4" />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

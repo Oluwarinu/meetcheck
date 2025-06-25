@@ -44,7 +44,7 @@ export default function Signup() {
         title: "Account Created",
         description: "Welcome to MeetCheck! Your account has been created successfully.",
       });
-      navigate('/events');
+      navigate('/dashboard');
     } catch (error: any) {
       // Error is already handled in AuthContext, but also show toast
       toast({
