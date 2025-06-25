@@ -14,7 +14,8 @@ import {
   Calendar,
   BarChart3,
   PieChart,
-  UserCheck
+  UserCheck,
+  Clock
 } from 'lucide-react';
 
 interface EducatorDashboardProps {
