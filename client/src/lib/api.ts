@@ -1,227 +1,142 @@
+const API_BASE_URL = '/api';
 
-import { supabase } from './supabase';
+interface LoginResponse {
+  user: any;
+  token: string;
+}
 
-interface ApiResponse<T> {
-  data?: T;
-  error?: string;
+interface SignupResponse {
+  user: any;
+  token: string;
 }
 
 class ApiClient {
-  // Auth methods
-  async signup(email: string, password: string, full_name: string) {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name
-        }
-      }
-    });
-
-    if (error) throw new Error(error.message);
-    return { user: data.user, token: data.session?.access_token };
-  }
-
-  async login(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) throw new Error(error.message);
-    return { user: data.user, token: data.session?.access_token };
-  }
-
-  async logout() {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw new Error(error.message);
-  }
-
-  async getProfile() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-    
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  async updateProfile(updates: any) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  async resetPassword(email: string) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
-    if (error) throw new Error(error.message);
-    return { message: 'Password reset email sent' };
-  }
-
-  // Event methods
-  async getEvents() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  async createEvent(eventData: any) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
-    const { data, error } = await supabase
-      .from('events')
-      .insert({ ...eventData, user_id: user.id })
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  async getEvent(id: string) {
-    const { data, error } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  async updateEvent(id: string, updates: any) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
-    const { data, error } = await supabase
-      .from('events')
-      .update(updates)
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  async deleteEvent(id: string) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
-
-    const { error } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', user.id);
-
-    if (error) throw new Error(error.message);
-    return { success: true };
-  }
-
-  // Participant methods
-  async getEventParticipants(eventId: string) {
-    const { data, error } = await supabase
-      .from('participants')
-      .select('*')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  async createParticipant(eventId: string, participantData: any) {
-    const { data, error } = await supabase
-      .from('participants')
-      .insert({ ...participantData, event_id: eventId })
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  // Check-in methods
-  async getEventCheckIns(eventId: string) {
-    const { data, error } = await supabase
-      .from('checkins')
-      .select('*, participants(*)')
-      .eq('event_id', eventId)
-      .order('checked_in_at', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  async checkIn(eventId: string, checkInData: any) {
-    const { data, error } = await supabase
-      .from('checkins')
-      .insert({ ...checkInData, event_id: eventId })
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
-  }
-
-  // Analytics methods
-  async getEventAnalytics(eventId: string) {
-    // Get basic event data
-    const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('*')
-      .eq('id', eventId)
-      .single();
-
-    if (eventError) throw new Error(eventError.message);
-
-    // Get participants count
-    const { count: participantsCount, error: participantsError } = await supabase
-      .from('participants')
-      .select('*', { count: 'exact', head: true })
-      .eq('event_id', eventId);
-
-    if (participantsError) throw new Error(participantsError.message);
-
-    // Get check-ins count
-    const { count: checkInsCount, error: checkInsError } = await supabase
-      .from('checkins')
-      .select('*', { count: 'exact', head: true })
-      .eq('event_id', eventId);
-
-    if (checkInsError) throw new Error(checkInsError.message);
-
+  private getAuthHeaders(): HeadersInit {
+    const token = localStorage.getItem('auth_token');
     return {
-      event,
-      totalParticipants: participantsCount || 0,
-      totalCheckIns: checkInsCount || 0,
-      attendanceRate: participantsCount ? ((checkInsCount || 0) / participantsCount) * 100 : 0
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
     };
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const response = await fetch(url, {
+      headers: this.getAuthHeaders(),
+      ...options,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Network error' }));
+      throw new Error(error.error || 'Request failed');
+    }
+
+    return response.json();
+  }
+
+  async login(email: string, password: string): Promise<LoginResponse> {
+    return this.request<LoginResponse>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  }
+
+  async signup(email: string, password: string, fullName: string): Promise<SignupResponse> {
+    return this.request<SignupResponse>('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify({ email, password, full_name: fullName }),
+    });
+  }
+
+  async getProfile(): Promise<any> {
+    return this.request<any>('/auth/profile');
+  }
+
+  async updateProfile(updates: any): Promise<any> {
+    return this.request<any>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async resetPassword(email: string): Promise<any> {
+    return this.request<any>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async getEvents(): Promise<any[]> {
+    return this.request<any[]>('/events');
+  }
+
+  async createEvent(eventData: any): Promise<any> {
+    return this.request<any>('/events', {
+      method: 'POST',
+      body: JSON.stringify(eventData),
+    });
+  }
+
+  async getEvent(id: string): Promise<any> {
+    return this.request<any>(`/events/${id}`);
+  }
+
+  async updateEvent(id: string, updates: any): Promise<any> {
+    return this.request<any>(`/events/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async deleteEvent(id: string): Promise<any> {
+    return this.request<any>(`/events/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getEventParticipants(eventId: string): Promise<any[]> {
+    return this.request<any[]>(`/events/${eventId}/participants`);
+  }
+
+  async getEventCheckIns(eventId: string): Promise<any[]> {
+    return this.request<any[]>(`/events/${eventId}/checkins`);
+  }
+
+  async getEventAnalytics(eventId: string): Promise<any> {
+    return this.request<any>(`/events/${eventId}/analytics`);
+  }
+
+  async getPublicEvent(id: string): Promise<any> {
+    return this.request<any>(`/public/events/${id}`);
+  }
+
+  async checkInToEvent(eventId: string, participantData: any): Promise<any> {
+    return this.request<any>(`/public/events/${eventId}/checkin`, {
+      method: 'POST',
+      body: JSON.stringify(participantData),
+    });
+  }
+
+  async getSubscription(): Promise<any> {
+    return this.request<any>('/subscription');
+  }
+
+  async updateSubscription(updates: any): Promise<any> {
+    return this.request<any>('/subscription', {
+      method: 'PUT',
+      body: JSON.stringify(updates),
+    });
+  }
+
+  async getEventTemplates(): Promise<any[]> {
+    return this.request<any[]>('/event-templates');
+  }
+
+  async createEventTemplate(templateData: any): Promise<any> {
+    return this.request<any>('/event-templates', {
+      method: 'POST',
+      body: JSON.stringify(templateData),
+    });
   }
 }
 

@@ -1,3 +1,3 @@
 
-// This file redirects to the new Supabase client
-export { supabase } from './lib/supabase';
+// This file is deprecated - using Express API instead
+export { apiClient as supabase } from './lib/api';
