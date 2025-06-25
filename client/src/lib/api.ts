@@ -94,10 +94,6 @@ class ApiClient {
     });
   }
 
-  async getPublicEvent(id: string): Promise<any> {
-    return this.request<any>(`/public/events/${id}`);
-  }
-
   async getEventParticipants(eventId: string): Promise<any[]> {
     return this.request<any[]>(`/events/${eventId}/participants`);
   }
