@@ -1,125 +1,200 @@
 import React, { useState } from 'react';
-import { Calendar, Users, MapPin, Clock, Edit, Trash2, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+import { apiClient } from '@/lib/api';
+import { Settings, Trash2, Calendar, Clock } from 'lucide-react';
 
 interface Event {
   id: string;
   title: string;
-  description: string;
-  date: string;
-  time: string;
-  location: string;
-  capacity: number;
-  attendees: number;
-  status: 'upcoming' | 'ongoing' | 'completed';
+  checkin_enabled: boolean;
+  checkin_deadline: string | null;
 }
 
 interface EventManagementProps {
   event: Event;
-  onEdit?: (event: Event) => void;
-  onDelete?: (eventId: string) => void;
-  onGenerateQR?: (eventId: string) => void;
+  onEventUpdate: (updatedEvent: Event) => void;
+  onEventDelete: (eventId: string) => void;
 }
 
-export default function EventManagement({ 
-  event, 
-  onEdit, 
-  onDelete, 
-  onGenerateQR 
-}: EventManagementProps) {
+export function EventManagement({ event, onEventUpdate, onEventDelete }: EventManagementProps) {
+  const { toast } = useToast();
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [checkinEnabled, setCheckinEnabled] = useState(event.checkin_enabled);
+  const [checkinDeadline, setCheckinDeadline] = useState(
+    event.checkin_deadline ? new Date(event.checkin_deadline).toISOString().slice(0, 16) : ''
+  );
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this event?')) return;
+  const handleUpdateSettings = async () => {
+    try {
+      const updates = {
+        checkin_enabled: checkinEnabled,
+        checkin_deadline: checkinDeadline ? new Date(checkinDeadline).toISOString() : null
+      };
 
+      const updatedEvent = await apiClient.updateEvent(event.id, updates);
+      
+      onEventUpdate(updatedEvent);
+      setIsSettingsOpen(false);
+      
+      toast({
+        title: "Settings Updated",
+        description: "Event check-in settings have been updated successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update event settings.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteEvent = async () => {
     setIsDeleting(true);
     try {
-      await onDelete?.(event.id);
-    } catch (error) {
-      console.error('Failed to delete event:', error);
+      await apiClient.deleteEvent(event.id);
+      onEventDelete(event.id);
+      
+      toast({
+        title: "Event Deleted",
+        description: "The event has been permanently deleted.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete event.",
+        variant: "destructive"
+      });
     } finally {
       setIsDeleting(false);
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'upcoming': return 'bg-blue-100 text-blue-800';
-      case 'ongoing': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-xl">{event.title}</CardTitle>
-            <p className="text-gray-600 mt-1">{event.description}</p>
-          </div>
-          <Badge className={getStatusColor(event.status)}>
-            {event.status}
-          </Badge>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-gray-500" />
-            <span>{event.date}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-gray-500" />
-            <span>{event.time}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-gray-500" />
-            <span>{event.location}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-gray-500" />
-            <span>{event.attendees}/{event.capacity} attendees</span>
-          </div>
-        </div>
-
-        <div className="flex gap-2 pt-4 border-t">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onEdit?.(event)}
-            className="flex-1"
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit
+    <div className="flex gap-2">
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Settings className="h-4 w-4 mr-1" />
+            Settings
           </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Event Check-in Settings</DialogTitle>
+            <DialogDescription>
+              Manage check-in availability and deadline for {event.title}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-base">Enable Check-in</Label>
+                <div className="text-sm text-muted-foreground">
+                  Allow participants to check in using QR code
+                </div>
+              </div>
+              <Switch
+                checked={checkinEnabled}
+                onCheckedChange={setCheckinEnabled}
+              />
+            </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onGenerateQR?.(event.id)}
-            className="flex-1"
-          >
-            <QrCode className="h-4 w-4 mr-2" />
-            QR Code
-          </Button>
+            <div className="space-y-2">
+              <Label htmlFor="deadline">Check-in Deadline</Label>
+              <div className="text-sm text-muted-foreground mb-2">
+                Set when the QR code will stop working (optional)
+              </div>
+              <div className="relative">
+                <Input
+                  id="deadline"
+                  type="datetime-local"
+                  value={checkinDeadline}
+                  onChange={(e) => setCheckinDeadline(e.target.value)}
+                  disabled={!checkinEnabled}
+                />
+                <Calendar className="absolute right-3 top-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+              </div>
+              {checkinDeadline && (
+                <div className="text-sm text-muted-foreground">
+                  QR code will expire: {new Date(checkinDeadline).toLocaleString()}
+                </div>
+              )}
+            </div>
 
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="flex-1"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {isDeleting ? 'Deleting...' : 'Delete'}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Current Status</CardTitle>
+              </CardHeader>
+              <CardContent className="pb-3">
+                <div className="space-y-1 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${checkinEnabled ? 'bg-green-500' : 'bg-red-500'}`} />
+                    Check-in is {checkinEnabled ? 'enabled' : 'disabled'}
+                  </div>
+                  {checkinEnabled && checkinDeadline && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      Expires {new Date(checkinDeadline).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSettingsOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateSettings}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50">
+            <Trash2 className="h-4 w-4 mr-1" />
+            Delete
           </Button>
-        </div>
-      </CardContent>
-    </Card>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Event</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{event.title}"? This action cannot be undone and will permanently remove:
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>All participant registrations</li>
+                <li>All check-in records</li>
+                <li>Event analytics data</li>
+                <li>QR codes</li>
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteEvent}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete Event'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }

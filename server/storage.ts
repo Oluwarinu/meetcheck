@@ -16,7 +16,7 @@ if (!process.env.DATABASE_URL) {
 }
 
 const sql = neon(process.env.DATABASE_URL);
-const db = drizzle(sql);
+const db = drizzle(sql, { schema: { users, events, participants, check_ins, event_templates, event_metrics, subscriptions, notification_preferences } });
 
 export interface IStorage {
   // User operations
