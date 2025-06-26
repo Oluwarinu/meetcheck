@@ -55,6 +55,8 @@ export const EventManagementDashboard: React.FC<EventManagementDashboardProps> =
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('useTemplate') === 'true') {
       setShowCreationFlow(true);
+      // Clear URL parameter after processing
+      window.history.replaceState({}, '', window.location.pathname);
     }
   }, [user]);
 

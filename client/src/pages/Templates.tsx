@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import EducatorTemplates from "@/components/educator/EducatorTemplates";
-import { useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { Search, GraduationCap, Heart, Building, Users, Clock, User } from "lucide-react";
 
 const templateCategories = [
@@ -71,7 +71,7 @@ export default function Templates() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const { user } = useAuth();
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const userRole = user?.user_role;
 
   const handleUseTemplate = (template: any) => {
@@ -80,9 +80,9 @@ export default function Templates() {
     
     // Navigate to educator events page to create event with template
     if (userRole === 'educator') {
-      setLocation('/educator/events?useTemplate=true');
+      navigate('/educator/events?useTemplate=true');
     } else {
-      setLocation('/events/create?useTemplate=true');
+      navigate('/events/create?useTemplate=true');
     }
   };
 

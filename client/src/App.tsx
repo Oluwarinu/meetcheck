@@ -50,9 +50,8 @@ function App() {
                   <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
                   <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
                   <Route path="/events/create" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
-                  <Route path="/events/:id/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-                  <Route path="/events/:id/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-                  <Route path="/events/:id/qr" element={<ProtectedRoute><QRCode /></ProtectedRoute>} />
+                  <Route path="/events/:eventId/qr" element={<ProtectedRoute><QRCode /></ProtectedRoute>} />
+                  <Route path="/events/:eventId/checkin" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
                   <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                   <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
@@ -60,8 +59,7 @@ function App() {
                   <Route path="/educator/events" element={<ProtectedRoute><EducatorEvents /></ProtectedRoute>} />
                 </Route>
                 
-                <Route path="/404" element={<NotFound />} />
-                <Route path="*" element={<Navigate to="/404" replace />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </div>
             <Toaster />
