@@ -65,11 +65,6 @@ export default function Templates() {
   const [selectedTemplate, setSelectedTemplate] = useState<DynamicTemplate | null>(null);
   const [showCreator, setShowCreator] = useState(false);
 
-  // Show educator-specific templates for educators
-  if (user?.user_role === 'educator') {
-    return <EducatorTemplates onSelectTemplate={handleTemplateSelect} />;
-  }
-
   const handleTemplateSelect = (template: DynamicTemplate) => {
     setSelectedTemplate(template);
     setShowCreator(true);
@@ -83,6 +78,11 @@ export default function Templates() {
     setSelectedTemplate(null);
     setShowCreator(false);
   };
+
+  // Show educator-specific templates for educators
+  if (user?.user_role === 'educator') {
+    return <EducatorTemplates onSelectTemplate={handleTemplateSelect} />;
+  }
 
   if (showCreator && selectedTemplate) {
     return (
