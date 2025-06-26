@@ -67,7 +67,7 @@ export default function Templates() {
 
   // Show educator-specific templates for educators
   if (user?.user_role === 'educator') {
-    return <EducatorTemplates />;
+    return <EducatorTemplates onSelectTemplate={handleTemplateSelect} />;
   }
 
   const handleTemplateSelect = (template: DynamicTemplate) => {
