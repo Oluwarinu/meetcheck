@@ -59,29 +59,71 @@ export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [eventData, setEventData] = useState<AcademicEventData>({
-    title: '',
-    description: '',
-    date: '',
-    time: '',
-    location: '',
-    capacity: 30,
-    course_code: '',
-    academic_year: '2024-2025',
-    department: '',
-    event_type: 'lecture',
-    participant_fields: [
-      { id: 'fullName', label: 'Full Name', type: 'text', required: true, enabled: true, placeholder: 'Enter full name' },
-      { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true, placeholder: 'student@university.edu' },
-      { id: 'student_id', label: 'Student ID', type: 'text', required: true, enabled: true, placeholder: 'e.g. 2024001' },
-      { id: 'course_code', label: 'Course Code', type: 'text', required: false, enabled: false, placeholder: 'e.g. CS101' },
-      { id: 'academic_year', label: 'Academic Year', type: 'select', required: false, enabled: false, options: ['2024-2025', '2023-2024', '2022-2023'] },
-      { id: 'department', label: 'Faculty/Department', type: 'select', required: false, enabled: false, options: ['Computer Science', 'Mathematics', 'English', 'Physics', 'Chemistry', 'Biology'] },
-      { id: 'campus_location', label: 'Campus Location', type: 'select', required: false, enabled: false, options: ['Main Campus', 'North Campus', 'South Campus', 'Online'] },
-      { id: 'gpa_range', label: 'Current GPA Range', type: 'select', required: false, enabled: false, options: ['4.0-3.7', '3.6-3.3', '3.2-2.9', '2.8-2.5', 'Below 2.5'] },
-      { id: 'major_field', label: 'Major Field of Study', type: 'text', required: false, enabled: false, placeholder: 'e.g. Computer Science' }
-    ]
-  });
+  // Initialize with template data if available
+  const initializeEventData = (): AcademicEventData => {
+    const storedTemplate = sessionStorage.getItem('selectedTemplate');
+    let baseData: AcademicEventData = {
+      title: '',
+      description: '',
+      date: '',
+      time: '',
+      location: '',
+      capacity: 30,
+      course_code: '',
+      academic_year: '2024-2025',
+      department: '',
+      event_type: 'lecture',
+      participant_fields: [
+        { id: 'fullName', label: 'Full Name', type: 'text', required: true, enabled: true, placeholder: 'Enter full name' },
+        { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true, placeholder: 'student@university.edu' },
+        { id: 'student_id', label: 'Student ID', type: 'text', required: true, enabled: true, placeholder: 'e.g. 2024001' },
+        { id: 'course_code', label: 'Course Code', type: 'text', required: false, enabled: false, placeholder: 'e.g. CS101' },
+        { id: 'academic_year', label: 'Academic Year', type: 'select', required: false, enabled: false, options: ['2024-2025', '2023-2024', '2022-2023'] },
+        { id: 'department', label: 'Faculty/Department', type: 'select', required: false, enabled: false, options: ['Computer Science', 'Mathematics', 'English', 'Physics', 'Chemistry', 'Biology'] },
+        { id: 'campus_location', label: 'Campus Location', type: 'select', required: false, enabled: false, options: ['Main Campus', 'North Campus', 'South Campus', 'Online'] },
+        { id: 'gpa_range', label: 'Current GPA Range', type: 'select', required: false, enabled: false, options: ['4.0-3.7', '3.6-3.3', '3.2-2.9', '2.8-2.5', 'Below 2.5'] },
+        { id: 'major_field', label: 'Major Field of Study', type: 'text', required: false, enabled: false, placeholder: 'e.g. Computer Science' }
+      ]
+    };
+
+    if (storedTemplate) {
+      try {
+        const template = JSON.parse(storedTemplate);
+        
+        // Pre-populate fields based on template
+        if (template.category === 'attendance') {
+          baseData.title = 'Attendance Tracking Session';
+          baseData.description = template.purpose;
+          // Enable attendance-specific fields
+          baseData.participant_fields = baseData.participant_fields.map(field => {
+            if (['student_id', 'course_code', 'academic_year', 'department'].includes(field.id)) {
+              return { ...field, enabled: true, required: true };
+            }
+            return field;
+          });
+        } else if (template.category === 'assignment') {
+          baseData.title = 'Assignment Performance Tracking';
+          baseData.description = template.purpose;
+          // Enable assignment-specific fields
+          baseData.participant_fields = baseData.participant_fields.map(field => {
+            if (['student_id', 'course_code', 'academic_year', 'department', 'gpa_range'].includes(field.id)) {
+              return { ...field, enabled: true, required: field.id !== 'gpa_range' };
+            }
+            return field;
+          });
+        }
+        
+        // Clear template from storage after use
+        sessionStorage.removeItem('selectedTemplate');
+      } catch (error) {
+        console.error('Failed to parse template:', error);
+      }
+    }
+
+    return baseData;
+  };
+
+  const [eventData, setEventData] = useState<AcademicEventData>(initializeEventData());
 
   const totalSteps = 4;
   const progress = ((currentStep + 1) / totalSteps) * 100;

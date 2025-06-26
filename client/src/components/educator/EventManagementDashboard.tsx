@@ -50,6 +50,12 @@ export const EventManagementDashboard: React.FC<EventManagementDashboardProps> =
 
   useEffect(() => {
     loadEvents();
+    
+    // Check if we should show creation flow with template
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('useTemplate') === 'true') {
+      setShowCreationFlow(true);
+    }
   }, [user]);
 
   const loadEvents = async () => {
@@ -58,14 +64,15 @@ export const EventManagementDashboard: React.FC<EventManagementDashboardProps> =
     try {
       setLoading(true);
       const userEvents = await apiClient.getEvents();
-      setEvents(userEvents);
-    } catch (error) {
+      setEvents(userEvents || []);
+    } catch (error: any) {
       console.error('Failed to load events:', error);
       toast({
         title: "Loading Error",
-        description: "Failed to load your academic events.",
+        description: error?.message || "Failed to load your academic events.",
         variant: "destructive"
       });
+      setEvents([]); // Set empty array on error
     } finally {
       setLoading(false);
     }

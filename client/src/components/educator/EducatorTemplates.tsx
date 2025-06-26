@@ -87,7 +87,7 @@ interface EducatorTemplatesProps {
   onSelectTemplate: (template: EducatorTemplate) => void;
 }
 
-const EducatorTemplates: React.FC<EducatorTemplatesProps> = ({ onSelectTemplate }) => {
+export const EducatorTemplates: React.FC<EducatorTemplatesProps> = ({ onSelectTemplate }) => {
   return (
     <div className="space-y-6">
       <div className="text-center">
