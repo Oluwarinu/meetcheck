@@ -29,6 +29,8 @@ import NotFound from './pages/NotFound';
 import RoleSelection from './pages/RoleSelection';
 import EducatorEvents from './pages/EducatorEvents';
 import EducatorDashboard from './pages/EducatorDashboard';
+import ManageTemplatesPage from './pages/ManageTemplatesPage';
+import SubmitAssignmentPage from './pages/SubmitAssignmentPage'; // Import the new page
 
 // Create a client
 const queryClient = new QueryClient();
@@ -50,6 +52,8 @@ function App() {
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/resources" element={<Resources />} />
                 <Route path="/checkin/:eventId" element={<PublicCheckIn />} />
+                <Route path="/submit-assignment/:templateId" element={<SubmitAssignmentPage />} /> {/* New Public Route */}
+                <Route path="/submit-assignment" element={<SubmitAssignmentPage />} /> {/* Fallback if no ID */}
                 
                 {/* Protected Routes with App Layout */}
                 <Route element={<AppLayout />}>
@@ -64,6 +68,7 @@ function App() {
                   <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
                   <Route path="/educator/dashboard" element={<ProtectedRoute><EducatorDashboard /></ProtectedRoute>} />
                   <Route path="/educator/events" element={<ProtectedRoute><EducatorEvents /></ProtectedRoute>} />
+                  <Route path="/manage-templates" element={<ProtectedRoute><ManageTemplatesPage /></ProtectedRoute>} /> {/* Add new route */}
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />
