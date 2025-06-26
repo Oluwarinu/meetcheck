@@ -53,14 +53,55 @@ export const check_ins = pgTable("check_ins", {
   ip_address: text("ip_address"),
 });
 
-// Phase 2: Event templates table
+// Phase 2: Dynamic Event templates table (keeping existing fields + new ones)
 export const event_templates = pgTable("event_templates", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   description: text("description"),
-  category: text("category").notNull(),
-  participant_fields: jsonb("participant_fields").notNull(),
-  default_capacity: integer("default_capacity"),
+  category: text("category").notNull(), // academic, corporate, networking
+  participant_fields: jsonb("participant_fields").notNull(), // Legacy field compatibility
+  default_capacity: integer("default_capacity"), // Legacy field compatibility
+  // New dynamic template fields
+  template_type: text("template_type").default("event"), // lecture, assignment, meeting, conference
+  dynamic_fields: jsonb("dynamic_fields").default('[]'), // Array of TemplateField configurations
+  features: jsonb("features").default('[]'), // Array of TemplateFeature configurations
+  max_attendees: integer("max_attendees").default(100),
+  duration_hours: integer("duration_hours").default(2),
+  is_system_template: boolean("is_system_template").default(true),
+  created_by: uuid("created_by").references(() => users.id),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// Assignment submissions table for file uploads and tracking
+export const assignment_submissions = pgTable("assignment_submissions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  event_id: uuid("event_id").notNull().references(() => events.id),
+  participant_id: uuid("participant_id").notNull().references(() => participants.id),
+  student_id: text("student_id").notNull(),
+  file_url: text("file_url"), // File storage URL
+  file_name: text("file_name"),
+  file_size: integer("file_size"),
+  submission_date: timestamp("submission_date").defaultNow().notNull(),
+  due_date: timestamp("due_date"),
+  grade: integer("grade"), // 0-100
+  status: text("status").notNull().default("pending"), // pending, submitted, graded, late
+  feedback: text("feedback"),
+  late_submission: boolean("late_submission").default(false),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  updated_at: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Grade management for assignments
+export const assignment_grades = pgTable("assignment_grades", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  event_id: uuid("event_id").notNull().references(() => events.id),
+  participant_id: uuid("participant_id").notNull().references(() => participants.id),
+  assignment_type: text("assignment_type").notNull(), // homework, quiz, project, exam
+  grade: integer("grade").notNull(), // 0-100
+  weight: integer("weight").default(100), // Grade weight percentage
+  graded_by: uuid("graded_by").references(() => users.id),
+  graded_at: timestamp("graded_at").defaultNow().notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -159,6 +200,35 @@ export const insertEventTemplateSchema = createInsertSchema(event_templates).pic
   category: true,
   participant_fields: true,
   default_capacity: true,
+  template_type: true,
+  dynamic_fields: true,
+  features: true,
+  max_attendees: true,
+  duration_hours: true,
+  created_by: true,
+});
+
+export const insertAssignmentSubmissionSchema = createInsertSchema(assignment_submissions).pick({
+  event_id: true,
+  participant_id: true,
+  student_id: true,
+  file_url: true,
+  file_name: true,
+  file_size: true,
+  due_date: true,
+  grade: true,
+  status: true,
+  feedback: true,
+  late_submission: true,
+});
+
+export const insertAssignmentGradeSchema = createInsertSchema(assignment_grades).pick({
+  event_id: true,
+  participant_id: true,
+  assignment_type: true,
+  grade: true,
+  weight: true,
+  graded_by: true,
 });
 
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).pick({
@@ -188,6 +258,10 @@ export type InsertCheckIn = z.infer<typeof insertCheckInSchema>;
 export type CheckIn = typeof check_ins.$inferSelect;
 export type InsertEventTemplate = z.infer<typeof insertEventTemplateSchema>;
 export type EventTemplate = typeof event_templates.$inferSelect;
+export type InsertAssignmentSubmission = z.infer<typeof insertAssignmentSubmissionSchema>;
+export type AssignmentSubmission = typeof assignment_submissions.$inferSelect;
+export type InsertAssignmentGrade = z.infer<typeof insertAssignmentGradeSchema>;
+export type AssignmentGrade = typeof assignment_grades.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 export type EventMetric = typeof event_metrics.$inferSelect;
