@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/StatsCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
-import EducatorDashboard from "@/components/educator/EducatorDashboard";
+
 import { 
   Search, 
   Users, 
