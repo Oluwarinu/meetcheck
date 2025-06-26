@@ -75,7 +75,7 @@ export default function EventManagementDashboard({
         description: error?.message || "Failed to load your academic events.",
         variant: "destructive"
       });
-      setEvents([]); // Set empty array on error
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,6 @@ export default function EventManagementDashboard({
     return (
       <EventCreationFlow
         onComplete={handleEventCreated}
-        onCancel={() => setShowCreationFlow(false)}
       />
     );
   }

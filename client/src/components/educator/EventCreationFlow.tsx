@@ -50,7 +50,7 @@ interface AcademicEventData {
 }
 
 interface EventCreationFlowProps {
-  onComplete?: (eventId: string) => void;
+  onComplete?: (event: any) => void;
 }
 
 export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete }) => {
