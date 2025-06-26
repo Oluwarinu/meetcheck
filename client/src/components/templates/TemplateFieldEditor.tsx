@@ -78,25 +78,85 @@ export default function TemplateFieldEditor({ field, onSave, onCancel }: Templat
     setFormData(prev => ({ ...prev, options: newOptions }));
   };
 
-  const handleValidationChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValidationRulesString(e.target.value);
+  // Helper to manage specific validation rules from dedicated inputs
+  const updateSpecificValidation = (ruleType: string, value: any, isActive: boolean) => {
+    let currentRules = formData.validation ? [...formData.validation] : [];
+    // Remove existing rule of this type
+    currentRules = currentRules.filter(rule => rule.type !== ruleType);
+    // Add new rule if active and value is meaningful
+    if (isActive && value !== undefined && value !== '') {
+      const newRule: ValidationRule = { type: ruleType };
+      if (ruleType === 'range' || ruleType === 'fileParams') {
+         // For range, value is an object like { min, max }
+         // For fileParams, value is an object like { maxSizeMB, acceptedTypes }
+        Object.assign(newRule, value);
+      } else {
+        newRule.value = value;
+      }
+      currentRules.push(newRule);
+    }
+    setFormData(prev => ({ ...prev, validation: currentRules }));
   };
+
+  // Separate states for specific validation inputs to avoid complex JSON parsing by user for these common cases
+  const [gradeMin, setGradeMin] = useState<string>(formData.validation?.find(r => r.type === 'range')?.min?.toString() || '');
+  const [gradeMax, setGradeMax] = useState<string>(formData.validation?.find(r => r.type === 'range')?.max?.toString() || '');
+  const [acceptedFileTypes, setAcceptedFileTypes] = useState<string>(formData.validation?.find(r => r.type === 'fileParams')?.acceptedTypes?.join(', ') || '');
+  const [maxFileSizeMB, setMaxFileSizeMB] = useState<string>(formData.validation?.find(r => r.type === 'fileParams')?.maxSizeMB?.toString() || '');
+
+
+  useEffect(() => {
+    // Update specific validation rules when formData.validation changes (e.g. field prop change)
+    // This is to keep dedicated input fields in sync if validation rules are loaded/reset
+    const rangeRule = formData.validation?.find(r => r.type === 'range');
+    setGradeMin(rangeRule?.min?.toString() || '');
+    setGradeMax(rangeRule?.max?.toString() || '');
+
+    const fileParamsRule = formData.validation?.find(r => r.type === 'fileParams');
+    setAcceptedFileTypes(fileParamsRule?.acceptedTypes?.join(', ') || '');
+    setMaxFileSizeMB(fileParamsRule?.maxSizeMB?.toString() || '');
+
+    // Update the generic JSON editor for other rules
+    const otherRules = formData.validation?.filter(r => r.type !== 'range' && r.type !== 'fileParams') || [];
+    setValidationRulesString(JSON.stringify(otherRules, null, 2));
+
+  }, [formData.validation]);
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    let parsedValidationRules: ValidationRule[];
+    let otherParsedRules: ValidationRule[] = [];
     try {
-      parsedValidationRules = validationRulesString.trim() ? JSON.parse(validationRulesString) : [];
-      if (!Array.isArray(parsedValidationRules)) {
-        throw new Error("Validation rules must be a JSON array.");
+      otherParsedRules = validationRulesString.trim() ? JSON.parse(validationRulesString) : [];
+      if (!Array.isArray(otherParsedRules)) {
+        throw new Error("Validation rules (JSON) must be an array.");
       }
-      // Basic validation for each rule object can be added here if needed
     } catch (error) {
-      alert(`Error parsing validation rules: ${error instanceof Error ? error.message : String(error)}\nPlease ensure it's a valid JSON array.`);
+      alert(`Error parsing general validation rules: ${error instanceof Error ? error.message : String(error)}\nPlease ensure it's valid JSON.`);
       return;
     }
 
-    onSave({ ...formData, validation: parsedValidationRules });
+    let finalValidationRules = [...otherParsedRules];
+
+    // Add/Update grade range rule
+    if (formData.type === 'grade' && (gradeMin.trim() !== '' || gradeMax.trim() !== '')) {
+      finalValidationRules = finalValidationRules.filter(r => r.type !== 'range'); // remove old one if any
+      const rangeRule: ValidationRule = { type: 'range' };
+      if (gradeMin.trim() !== '') rangeRule.min = parseFloat(gradeMin);
+      if (gradeMax.trim() !== '') rangeRule.max = parseFloat(gradeMax);
+      if (Object.keys(rangeRule).length > 1) finalValidationRules.push(rangeRule);
+    }
+
+    // Add/Update file params rule
+    if (formData.type === 'file' && (acceptedFileTypes.trim() !== '' || maxFileSizeMB.trim() !== '')) {
+      finalValidationRules = finalValidationRules.filter(r => r.type !== 'fileParams'); // remove old one
+      const fileRule: ValidationRule = { type: 'fileParams' };
+      if (acceptedFileTypes.trim() !== '') fileRule.acceptedTypes = acceptedFileTypes.split(',').map(s => s.trim()).filter(s => s);
+      if (maxFileSizeMB.trim() !== '') fileRule.maxSizeMB = parseFloat(maxFileSizeMB);
+      if (Object.keys(fileRule).length > 1) finalValidationRules.push(fileRule);
+    }
+
+    onSave({ ...formData, validation: finalValidationRules });
   };
 
   return (
@@ -130,8 +190,71 @@ export default function TemplateFieldEditor({ field, onSave, onCancel }: Templat
         </Select>
       </div>
 
+      {/* Conditional inputs for 'grade' type */}
+      {formData.type === 'grade' && (
+        <div className="space-y-3 p-4 border rounded-md bg-slate-50">
+          <Label className="block text-sm font-medium text-gray-700">Grade Specific Options</Label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="gradeMin" className="block text-xs font-medium text-gray-600 mb-1">Minimum Grade</Label>
+              <Input
+                id="gradeMin"
+                name="gradeMin"
+                type="number"
+                value={gradeMin}
+                onChange={(e) => setGradeMin(e.target.value)}
+                placeholder="e.g., 0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="gradeMax" className="block text-xs font-medium text-gray-600 mb-1">Maximum Grade</Label>
+              <Input
+                id="gradeMax"
+                name="gradeMax"
+                type="number"
+                value={gradeMax}
+                onChange={(e) => setGradeMax(e.target.value)}
+                placeholder="e.g., 100"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Conditional inputs for 'file' type */}
+      {formData.type === 'file' && (
+        <div className="space-y-3 p-4 border rounded-md bg-slate-50">
+          <Label className="block text-sm font-medium text-gray-700">File Upload Options</Label>
+          <div>
+            <Label htmlFor="acceptedFileTypes" className="block text-xs font-medium text-gray-600 mb-1">
+              Accepted File Types (comma-separated)
+            </Label>
+            <Input
+              id="acceptedFileTypes"
+              name="acceptedFileTypes"
+              value={acceptedFileTypes}
+              onChange={(e) => setAcceptedFileTypes(e.target.value)}
+              placeholder="e.g., .pdf, .docx, image/png"
+            />
+          </div>
+          <div>
+            <Label htmlFor="maxFileSizeMB" className="block text-xs font-medium text-gray-600 mb-1">
+              Max File Size (MB)
+            </Label>
+            <Input
+              id="maxFileSizeMB"
+              name="maxFileSizeMB"
+              type="number"
+              value={maxFileSizeMB}
+              onChange={(e) => setMaxFileSizeMB(e.target.value)}
+              placeholder="e.g., 10"
+            />
+          </div>
+        </div>
+      )}
+
       {formData.type === 'select' && (
-        <div className="space-y-3 p-4 border rounded-md">
+        <div className="space-y-3 p-4 border rounded-md bg-slate-50">
           <Label className="block text-sm font-medium text-gray-700">Options for Select</Label>
           {(formData.options || []).map((opt, index) => (
             <div key={index} className="flex items-center gap-2">
