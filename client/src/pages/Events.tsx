@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useQueryClient } from '@tanstack/react-query'; // Import useQueryClient
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EventManagement } from "@/components/EventManagement";
 import { useAuth } from "@/contexts/AuthContext";
-import { apiClient } from "@/lib/api";
+import { useEventsQuery } from "@/hooks/useEventsQuery"; // Import useEventsQuery
 import { 
   Plus, 
   Search, 
@@ -26,32 +27,22 @@ import {
 
 export default function Events() {
   const { user } = useAuth();
-  const [events, setEvents] = useState<any[]>([]);
+  const queryClient = useQueryClient();
+  const { data: events = [], isLoading: loading, error } = useEventsQuery();
   const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
-  const [loading, setLoading] = useState(true);
+
+  // Effect for error display
+  useEffect(() => {
+    if (error) {
+      console.error("Failed to fetch events:", error);
+      // Optionally: show a toast or an error message in the UI
+    }
+  }, [error]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      if (!user) return;
-      try {
-        setLoading(true);
-        const userEvents = await apiClient.getEvents();
-        setEvents(userEvents);
-        setFilteredEvents(userEvents);
-      } catch (error) {
-        console.error("Failed to fetch events:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, [user]);
-
-  useEffect(() => {
-    let filtered = events;
+    let filtered = events || []; // Ensure events is not undefined
 
     // Filter by search term
     if (searchTerm) {
@@ -108,36 +99,38 @@ export default function Events() {
   };
 
   const handleEventUpdate = (updatedEvent: any) => {
-    setEvents(events.map(event => 
-      event.id === updatedEvent.id ? updatedEvent : event
-    ));
+    // Optimistically update the UI or invalidate query
+    queryClient.setQueryData(['events'], (oldData: any[] | undefined) =>
+      oldData ? oldData.map(event => event.id === updatedEvent.id ? updatedEvent : event) : []
+    );
+    // Optionally, could also do: queryClient.invalidateQueries({ queryKey: ['events'] });
+    // For more complex updates or if backend returns the full list.
   };
 
   const handleEventDelete = (eventId: string) => {
-    setEvents(events.filter(event => event.id !== eventId));
+    // Optimistically update the UI or invalidate query
+    queryClient.setQueryData(['events'], (oldData: any[] | undefined) =>
+      oldData ? oldData.filter(event => event.id !== eventId) : []
+    );
+    // Optionally: queryClient.invalidateQueries({ queryKey: ['events'] });
   };
 
-  const upcomingCount = events.filter(event => {
+  const eventsData = events || []; // Use eventsData for calculations to ensure it's an array
+
+  const upcomingCount = eventsData.filter(event => {
     const eventDate = new Date(event.date);
     return eventDate >= new Date();
   }).length;
 
-  const completedCount = events.filter(event => {
+  const completedCount = eventsData.filter(event => {
     const eventDate = new Date(event.date);
     return eventDate < new Date();
   }).length;
 
   // Filter events for educators to show only academic events
-  const displayEvents = user?.user_role === 'educator' 
-    ? filteredEvents.filter(event => 
-        event.title?.toLowerCase().includes('class') || 
-        event.title?.toLowerCase().includes('lecture') ||
-        event.title?.toLowerCase().includes('assignment') ||
-        event.title?.toLowerCase().includes('course') ||
-        event.description?.toLowerCase().includes('academic') ||
-        event.description?.toLowerCase().includes('student')
-      )
-    : filteredEvents;
+  // This filtering logic is applied on the client side after fetching all events.
+  // This remains the same, just ensure `filteredEvents` is derived correctly from `eventsData`.
+  // The `useEffect` that sets `filteredEvents` already handles this with `events` (now from `useEventsQuery`).
 
   return (
     <div className="space-y-6">

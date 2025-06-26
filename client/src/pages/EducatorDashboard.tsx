@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react'; // Added useState back for stats
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiClient } from '@/lib/api';
+import { useEventsQuery } from '@/hooks/useEventsQuery';
 import { 
   BookOpen, 
   Users, 
@@ -20,8 +20,7 @@ import {
 
 export default function EducatorDashboard() {
   const { user } = useAuth();
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: events = [], isLoading: loading, error } = useEventsQuery(); // Use events from hook, provide default
   const [stats, setStats] = useState({
     totalEvents: 0,
     activeEvents: 0,
@@ -30,39 +29,36 @@ export default function EducatorDashboard() {
   });
 
   useEffect(() => {
-    loadDashboardData();
-  }, [user]);
-
-  const loadDashboardData = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      const userEvents = await apiClient.getEvents();
-      setEvents(userEvents || []);
-      
-      // Calculate stats
+    if (events && events.length > 0) {
       const today = new Date();
-      const activeEvents = userEvents.filter((event: any) => {
+      const activeEventsCount = events.filter((event: any) => {
         const eventDate = new Date(event.date);
         return eventDate.toDateString() === today.toDateString();
       }).length;
       
-      const totalStudents = userEvents.reduce((sum: number, event: any) => 
+      const totalStudentsCount = events.reduce((sum: number, event: any) =>
         sum + (event.current_attendees || 0), 0);
       
       setStats({
-        totalEvents: userEvents.length,
-        activeEvents,
-        totalStudents,
-        avgAttendance: 87
+        totalEvents: events.length,
+        activeEvents: activeEventsCount,
+        totalStudents: totalStudentsCount,
+        avgAttendance: 87 // Assuming this is calculated elsewhere or is static for now
       });
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-    } finally {
-      setLoading(false);
+    } else if (!loading) { // If not loading and events is empty or undefined
+      setStats({
+        totalEvents: 0,
+        activeEvents: 0,
+        totalStudents: 0,
+        avgAttendance: 0
+      });
     }
-  };
+  }, [events, loading]);
+
+  if (error) {
+    // Handle error state, e.g., display an error message
+    return <div className="text-red-500 p-4">Error loading dashboard data: {error.message}</div>;
+  }
 
   const getEventStatus = (event: any) => {
     const eventDate = new Date(event.date);
@@ -92,8 +88,64 @@ export default function EducatorDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      <div className="space-y-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-8 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
+          <div className="h-10 bg-gray-200 rounded w-48"></div>
+        </div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="h-5 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Quick Actions & Recent Events Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Quick Actions Skeleton */}
+          <Card>
+            <CardHeader>
+              <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="h-8 bg-gray-200 rounded w-full"></div>
+              <div className="h-8 bg-gray-200 rounded w-full"></div>
+              <div className="h-8 bg-gray-200 rounded w-full"></div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Events Skeleton */}
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                <div className="h-8 bg-gray-200 rounded w-24"></div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1 space-y-2">
+                    <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                  <div className="h-8 bg-gray-200 rounded w-16 ml-2"></div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
