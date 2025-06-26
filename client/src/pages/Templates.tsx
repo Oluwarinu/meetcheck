@@ -1,21 +1,28 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import EducatorTemplates from "@/components/educator/EducatorTemplates";
+import DynamicTemplateSelector from "@/components/templates/DynamicTemplateSelector";
+import DynamicEventCreator from "@/components/templates/DynamicEventCreator";
 import { useNavigate } from "react-router-dom";
-import { Search, GraduationCap, Heart, Building, Users, Clock, User } from "lucide-react";
 
-const templateCategories = [
-  { id: "all", name: "All", icon: null },
-  { id: "education", name: "Education", icon: GraduationCap },
-  { id: "celebration", name: "Celebration", icon: Heart },
-  { id: "business", name: "Business", icon: Building },
-  { id: "training", name: "Training", icon: Users }
-];
+// Define types locally to avoid import issues
+interface DynamicTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  category: 'academic' | 'corporate' | 'networking';
+  template_type: 'lecture' | 'assignment' | 'meeting' | 'conference' | 'workshop' | 'exam';
+  dynamic_fields: any[];
+  features: any[];
+  max_attendees: number;
+  duration_hours: number;
+  is_system_template: boolean;
+  created_by?: string;
+  created_at: string;
+  updated_at?: string;
+}
 
+// Simplified template data without icon references
 const eventTemplates = [
   {
     id: "academic-lecture",
@@ -26,20 +33,7 @@ const eventTemplates = [
     duration: "1-2 hours",
     features: ["Student attendance tracking", "Registration number field", "Department/Course information"],
     fields: ["Full Name", "Email Address", "Student ID", "+1 more"],
-    icon: GraduationCap,
     color: "blue"
-  },
-  {
-    id: "wedding-celebration",
-    name: "Wedding Celebration",
-    description: "Elegant template for wedding ceremonies and receptions",
-    category: "celebration",
-    maxAttendees: 200,
-    duration: "4-6 hours",
-    features: ["RSVP management", "Dietary requirements", "Plus-one tracking"],
-    fields: ["Full Name", "Email Address", "Phone Number", "+2 more"],
-    icon: Heart,
-    color: "pink"
   },
   {
     id: "business-conference",
@@ -50,7 +44,6 @@ const eventTemplates = [
     duration: "1-3 days",
     features: ["Company information", "Job title tracking", "Networking facilitation"],
     fields: ["Full Name", "Email Address", "Company/Organization", "+2 more"],
-    icon: Building,
     color: "green"
   },
   {
@@ -62,36 +55,42 @@ const eventTemplates = [
     duration: "Half/Full day",
     features: ["Skill level tracking", "Pre-training survey", "Certificate generation"],
     fields: ["Full Name", "Email Address", "Experience Level", "+1 more"],
-    icon: Users,
     color: "purple"
   }
 ];
 
 export default function Templates() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const { user } = useAuth();
   const navigate = useNavigate();
-  const userRole = user?.user_role;
+  const [selectedTemplate, setSelectedTemplate] = useState<DynamicTemplate | null>(null);
+  const [showCreator, setShowCreator] = useState(false);
 
-  const handleUseTemplate = (template: any) => {
-    // Store template in sessionStorage for event creation
-    sessionStorage.setItem('selectedTemplate', JSON.stringify(template));
-    
-    // Navigate to educator events page to create event with template
-    if (userRole === 'educator') {
-      navigate('/educator/events?useTemplate=true');
-    } else {
-      navigate('/events/create?useTemplate=true');
-    }
+  // Show educator-specific templates for educators
+  if (user?.user_role === 'educator') {
+    return <EducatorTemplates />;
+  }
+
+  const handleTemplateSelect = (template: DynamicTemplate) => {
+    setSelectedTemplate(template);
+    setShowCreator(true);
   };
 
-  // Show educator-specific templates if user is an educator
-  if (userRole === 'educator') {
+  const handleEventCreated = (eventId: string) => {
+    navigate(`/events?created=${eventId}`);
+  };
+
+  const handleBackToTemplates = () => {
+    setSelectedTemplate(null);
+    setShowCreator(false);
+  };
+
+  if (showCreator && selectedTemplate) {
     return (
-      <div className="max-w-6xl mx-auto p-6">
-        <EducatorTemplates onSelectTemplate={handleUseTemplate} />
-      </div>
+      <DynamicEventCreator
+        template={selectedTemplate}
+        onComplete={handleEventCreated}
+        onBack={handleBackToTemplates}
+      />
     );
   }
 

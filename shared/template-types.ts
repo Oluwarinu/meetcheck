@@ -108,58 +108,104 @@ export const SYSTEM_TEMPLATES: DynamicTemplate[] = [
     ]
   },
   {
-    id: 'assignment-submission',
-    name: 'Assignment Submission',
-    description: 'Complete assignment submission system with file uploads and grade tracking',
+    id: 'assignment-submission-performance',
+    name: 'Assignment Submission & Academic Performance Tracking',
+    description: 'Monitor academic submission behaviors and align them with performance and attendance records',
     category: 'academic',
     template_type: 'assignment',
-    max_attendees: 100,
-    duration_hours: 168, // 1 week duration
+    max_attendees: 200,
+    duration_hours: 168, // 1 week duration for assignments
     is_system_template: true,
     created_at: new Date().toISOString(),
     dynamic_fields: [
-      {
-        id: 'name',
-        type: 'text',
-        label: 'Full Name',
-        required: true,
-        placeholder: 'Enter your full name'
-      },
-      {
-        id: 'email',
-        type: 'email',
-        label: 'Email Address',
-        required: true,
-        placeholder: 'student@university.edu'
-      },
+      // Core Academic Identity Fields
       {
         id: 'student_id',
         type: 'text',
         label: 'Student ID',
         required: true,
-        placeholder: 'Enter your student ID'
+        placeholder: 'Enter student ID',
+        validation: {
+          pattern: '^[A-Z0-9]{6,12}$',
+          message: 'Student ID must be 6-12 alphanumeric characters'
+        }
       },
+      {
+        id: 'course_code',
+        type: 'text',
+        label: 'Course Code',
+        required: true,
+        placeholder: 'e.g., CS301, MATH201',
+        validation: {
+          pattern: '^[A-Z]{2,4}[0-9]{3,4}$',
+          message: 'Course code format: ABC123 or ABCD1234'
+        }
+      },
+      {
+        id: 'academic_year',
+        type: 'select',
+        label: 'Academic Year',
+        required: true,
+        options: ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Graduate', 'PhD']
+      },
+      {
+        id: 'faculty_department',
+        type: 'select', 
+        label: 'Faculty / Department',
+        required: true,
+        options: [
+          'Faculty of Engineering',
+          'Faculty of Computer Science', 
+          'Faculty of Mathematics',
+          'Faculty of Physics',
+          'Faculty of Chemistry',
+          'Faculty of Biology',
+          'Faculty of Business',
+          'Faculty of Arts',
+          'Faculty of Medicine',
+          'Other'
+        ]
+      },
+      // Assignment Specific Fields
+      {
+        id: 'assignment_title',
+        type: 'text',
+        label: 'Assignment Title',
+        required: true,
+        placeholder: 'Enter assignment title'
+      },
+      {
+        id: 'submission_status',
+        type: 'select',
+        label: 'Submission Status',
+        required: true,
+        options: ['Draft', 'In Progress', 'Completed', 'Submitted', 'Late Submission', 'Resubmission']
+      },
+      // File Upload & Performance Tracking
       {
         id: 'assignment_file',
         type: 'file',
-        label: 'Assignment File',
+        label: 'Assignment File Upload',
         required: true,
-        fileTypes: ['.pdf', '.doc', '.docx', '.txt', '.zip'],
-        maxFileSize: 10485760, // 10MB
-        placeholder: 'Upload your assignment file'
+        fileTypes: ['.pdf', '.doc', '.docx', '.txt', '.zip', '.ppt', '.pptx'],
+        maxFileSize: 25485760, // 25MB for comprehensive submissions
+        placeholder: 'Upload assignment document'
       },
       {
-        id: 'due_date',
+        id: 'submission_date',
         type: 'date',
-        label: 'Due Date',
+        label: 'Submission Date',
         required: true
       },
       {
-        id: 'assignment_type',
-        type: 'select',
-        label: 'Assignment Type',
-        required: true,
-        options: ['Homework', 'Project', 'Essay', 'Research Paper', 'Lab Report', 'Presentation']
+        id: 'expected_grade',
+        type: 'grade',
+        label: 'Expected Grade (0-100)',
+        required: false,
+        validation: {
+          min: 0,
+          max: 100
+        }
       }
     ],
     features: [
@@ -167,9 +213,10 @@ export const SYSTEM_TEMPLATES: DynamicTemplate[] = [
         type: 'file_upload',
         enabled: true,
         config: { 
-          max_files: 3,
-          allowed_extensions: ['.pdf', '.doc', '.docx', '.txt', '.zip'],
-          max_size_mb: 10
+          max_files: 5,
+          allowed_extensions: ['.pdf', '.doc', '.docx', '.txt', '.zip', '.ppt', '.pptx'],
+          max_size_mb: 25,
+          version_control: true
         }
       },
       {
@@ -177,8 +224,10 @@ export const SYSTEM_TEMPLATES: DynamicTemplate[] = [
         enabled: true,
         config: { 
           allow_late: true,
-          late_penalty_percent: 10,
-          resubmission_allowed: true
+          late_penalty_percent: 15,
+          resubmission_allowed: true,
+          max_resubmissions: 2,
+          deadline_reminders: true
         }
       },
       {
@@ -187,7 +236,18 @@ export const SYSTEM_TEMPLATES: DynamicTemplate[] = [
         config: {
           scale: 100,
           passing_grade: 60,
-          grade_categories: ['Excellent', 'Good', 'Satisfactory', 'Needs Improvement', 'Fail']
+          grade_categories: ['A+ (90-100)', 'A (85-89)', 'B+ (80-84)', 'B (75-79)', 'C+ (70-74)', 'C (65-69)', 'D (60-64)', 'F (0-59)'],
+          performance_analytics: true,
+          trend_analysis: true
+        }
+      },
+      {
+        type: 'attendance',
+        enabled: true,
+        config: { 
+          auto_checkin: false, 
+          location_required: false,
+          performance_correlation: true
         }
       }
     ]
