@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'; // Added useState back for stats
 import { Link } from 'react-router-dom';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -236,7 +237,7 @@ export default function EducatorDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Link to="/educator/events?create=true">
+            <Link to="/educator/events">
               <Button variant="outline" className="w-full justify-start">
                 <Calendar className="h-4 w-4 mr-2" />
                 Create New Event
@@ -277,7 +278,7 @@ export default function EducatorDashboard() {
               <div className="text-center py-8">
                 <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 mb-4">No events created yet</p>
-                <Link to="/educator/events?create=true">
+                <Link to="/educator/events">
                   <Button className="bg-purple-600 hover:bg-purple-700">
                     Create Your First Event
                   </Button>
