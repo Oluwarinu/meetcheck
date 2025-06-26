@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api';
-import { Skeleton } from '@/components/ui/skeleton';
 import { 
   BookOpen, 
   Users, 
@@ -18,86 +17,6 @@ import {
   Clock,
   CheckCircle
 } from 'lucide-react';
-
-// Skeleton component for loading state
-function EducatorDashboardSkeleton() {
-  return (
-    <div className="space-y-6">
-      {/* Header Skeleton */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Skeleton className="h-8 w-64 mb-2" />
-          <Skeleton className="h-4 w-40" />
-        </div>
-        <Skeleton className="h-10 w-48" />
-      </div>
-
-      {/* Stats Grid Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <Skeleton className="h-4 w-20 mb-2" />
-                  <Skeleton className="h-8 w-12 mb-1" />
-                  <Skeleton className="h-3 w-16" />
-                </div>
-                <Skeleton className="h-10 w-10 rounded-full" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Content Area Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="h-8 w-20" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Skeleton className="h-5 w-32" />
-                      <Skeleton className="h-5 w-16" />
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-4 w-28" />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-8 w-12" />
-                    <Skeleton className="h-8 w-20" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
 
 export default function EducatorDashboard() {
   const { user } = useAuth();
@@ -172,7 +91,11 @@ export default function EducatorDashboard() {
   };
 
   if (loading) {
-    return <EducatorDashboardSkeleton />;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      </div>
+    );
   }
 
   const recentEvents = events.slice(0, 3);
