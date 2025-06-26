@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { apiClient } from '@/lib/api';
-import EventCreationFlow from './EventCreationFlow';
+import { EventCreationFlow } from './EventCreationFlow';
 import { 
   QrCode, 
   Users, 

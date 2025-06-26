@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,8 +20,20 @@ import {
   BookOpen,
   FileText,
   CheckCircle,
-  QrCode
+  QrCode,
+  Plus
 } from 'lucide-react';
+
+interface ParticipantField {
+  id: string;
+  label: string;
+  type: 'text' | 'email' | 'select' | 'number' | 'tel';
+  required: boolean;
+  enabled: boolean;
+  options?: string[];
+  placeholder?: string;
+  validation?: string;
+}
 
 interface AcademicEventData {
   title: string;
@@ -34,7 +46,7 @@ interface AcademicEventData {
   academic_year: string;
   department: string;
   event_type: 'lecture' | 'lab' | 'seminar' | 'exam' | 'workshop';
-  participant_fields: any[];
+  participant_fields: ParticipantField[];
 }
 
 interface EventCreationFlowProps {
@@ -42,7 +54,7 @@ interface EventCreationFlowProps {
 }
 
 export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete }) => {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
@@ -59,11 +71,15 @@ export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete
     department: '',
     event_type: 'lecture',
     participant_fields: [
-      { id: 'fullName', label: 'Full Name', type: 'text', required: true, enabled: true },
-      { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true },
-      { id: 'student_id', label: 'Student ID', type: 'text', required: true, enabled: true },
-      { id: 'academic_year', label: 'Academic Year', type: 'select', required: true, enabled: true, options: ['Freshman', 'Sophomore', 'Junior', 'Senior'] },
-      { id: 'department', label: 'Department', type: 'select', required: true, enabled: true, options: ['Computer Science', 'Mathematics', 'English', 'Physics', 'Chemistry', 'Biology'] }
+      { id: 'fullName', label: 'Full Name', type: 'text', required: true, enabled: true, placeholder: 'Enter full name' },
+      { id: 'email', label: 'Email Address', type: 'email', required: true, enabled: true, placeholder: 'student@university.edu' },
+      { id: 'student_id', label: 'Student ID', type: 'text', required: true, enabled: true, placeholder: 'e.g. 2024001' },
+      { id: 'course_code', label: 'Course Code', type: 'text', required: false, enabled: false, placeholder: 'e.g. CS101' },
+      { id: 'academic_year', label: 'Academic Year', type: 'select', required: false, enabled: false, options: ['2024-2025', '2023-2024', '2022-2023'] },
+      { id: 'department', label: 'Faculty/Department', type: 'select', required: false, enabled: false, options: ['Computer Science', 'Mathematics', 'English', 'Physics', 'Chemistry', 'Biology'] },
+      { id: 'campus_location', label: 'Campus Location', type: 'select', required: false, enabled: false, options: ['Main Campus', 'North Campus', 'South Campus', 'Online'] },
+      { id: 'gpa_range', label: 'Current GPA Range', type: 'select', required: false, enabled: false, options: ['4.0-3.7', '3.6-3.3', '3.2-2.9', '2.8-2.5', 'Below 2.5'] },
+      { id: 'major_field', label: 'Major Field of Study', type: 'text', required: false, enabled: false, placeholder: 'e.g. Computer Science' }
     ]
   });
 
@@ -72,6 +88,21 @@ export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete
 
   const updateEventData = (updates: Partial<AcademicEventData>) => {
     setEventData(prev => ({ ...prev, ...updates }));
+  };
+
+  const addCustomField = () => {
+    const newField: ParticipantField = {
+      id: `custom_${Date.now()}`,
+      label: `Custom Field ${eventData.participant_fields.length - 8}`,
+      type: 'text',
+      required: false,
+      enabled: true,
+      placeholder: 'Enter value...'
+    };
+    
+    updateEventData({ 
+      participant_fields: [...eventData.participant_fields, newField] 
+    });
   };
 
   const validateStep = (step: number): boolean => {
@@ -140,7 +171,7 @@ export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete
       if (onComplete) {
         onComplete(createdEvent.id);
       } else {
-        navigate(`/events/${createdEvent.id}/qr`);
+        setLocation(`/events/${createdEvent.id}/qr`);
       }
 
     } catch (error: any) {
@@ -345,7 +376,7 @@ export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete
             </div>
 
             <div className="space-y-3">
-              {eventData.participant_fields.map((field) => (
+              {eventData.participant_fields.map((field, index) => (
                 <div key={field.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-3">
                     <input
@@ -367,12 +398,56 @@ export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    {field.required && (
-                      <Badge variant="destructive" className="text-xs">Required</Badge>
+                    <label className="flex items-center space-x-1 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={field.required}
+                        onChange={(e) => {
+                          const updatedFields = eventData.participant_fields.map(f =>
+                            f.id === field.id ? { ...f, required: e.target.checked } : f
+                          );
+                          updateEventData({ participant_fields: updatedFields });
+                        }}
+                        className="rounded"
+                        disabled={!field.enabled}
+                      />
+                      <span className={field.enabled ? "text-gray-700" : "text-gray-400"}>Required</span>
+                    </label>
+                    {index >= 9 && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const updatedFields = eventData.participant_fields.filter(f => f.id !== field.id);
+                          updateEventData({ participant_fields: updatedFields });
+                        }}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        Remove
+                      </Button>
                     )}
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Add Custom Field Section */}
+            <div className="border-t pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium text-gray-900">Custom Fields</h4>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={addCustomField}
+                  className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Field
+                </Button>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Add custom fields specific to your academic requirements
+              </p>
             </div>
 
             <div className="p-4 bg-blue-50 rounded-lg">
