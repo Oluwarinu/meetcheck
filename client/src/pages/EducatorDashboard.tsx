@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEvents, useEventStats } from '@/hooks/useEvents';
+import { apiClient } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   BookOpen, 
@@ -101,10 +101,49 @@ function EducatorDashboardSkeleton() {
 
 export default function EducatorDashboard() {
   const { user } = useAuth();
-  const { data: events = [], isLoading: eventsLoading } = useEvents();
-  const { stats, isLoading: statsLoading } = useEventStats();
-  
-  const loading = eventsLoading || statsLoading;
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalEvents: 0,
+    activeEvents: 0,
+    totalStudents: 0,
+    avgAttendance: 87
+  });
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [user]);
+
+  const loadDashboardData = async () => {
+    if (!user) return;
+    
+    try {
+      setLoading(true);
+      const userEvents = await apiClient.getEvents();
+      setEvents(userEvents || []);
+      
+      // Calculate stats
+      const today = new Date();
+      const activeEvents = userEvents.filter((event: any) => {
+        const eventDate = new Date(event.date);
+        return eventDate.toDateString() === today.toDateString();
+      }).length;
+      
+      const totalStudents = userEvents.reduce((sum: number, event: any) => 
+        sum + (event.current_attendees || 0), 0);
+      
+      setStats({
+        totalEvents: userEvents.length,
+        activeEvents,
+        totalStudents,
+        avgAttendance: 87
+      });
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getEventStatus = (event: any) => {
     const eventDate = new Date(event.date);

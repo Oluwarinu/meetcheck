@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { apiClient } from '@/lib/api';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EventCreationFlow } from './EventCreationFlow';
 import { 
   QrCode, 
@@ -45,10 +47,8 @@ export default function EventManagementDashboard({
 }: EventManagementDashboardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { data: events = [], isLoading: loading } = useEvents();
-  const createEventMutation = useCreateEvent();
-  const updateEventMutation = useUpdateEvent();
-  const deleteEventMutation = useDeleteEvent();
+  const [events, setEvents] = useState<AcademicEvent[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showCreationFlow, setShowCreationFlow] = useState(showCreateFlow);
 
   useEffect(() => {
