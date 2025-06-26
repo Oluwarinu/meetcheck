@@ -77,6 +77,13 @@ class ApiClient {
     });
   }
 
+  async updateEvent(eventId: string, updates: any): Promise<any> {
+    return this.request<any>(`/events/${eventId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+  }
+
   async getEvent(id: string): Promise<any> {
     return this.request<any>(`/events/${id}`);
   }

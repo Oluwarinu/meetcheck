@@ -144,10 +144,10 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ userRole }) => {
           <Button
             variant="outline"
             className="justify-start border-purple-200 text-purple-700 hover:bg-purple-50"
-            onClick={() => window.location.href = '/create-event'}
+            onClick={() => window.location.href = '/educator/events'}
           >
             <BookOpen className="mr-2 h-4 w-4" />
-            Create Academic Event
+            Manage Academic Events
           </Button>
           <Button
             variant="outline"
