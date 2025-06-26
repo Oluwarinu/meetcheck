@@ -4,7 +4,7 @@ import EventManagementDashboard from '@/components/educator/EventManagementDashb
 export default function EducatorEvents() {
   return (
     <div className="container mx-auto px-4 py-6">
-      <EventManagementDashboard />
+      <EventManagementDashboard onCreateComplete={() => {}} />
     </div>
   );
 }
