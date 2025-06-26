@@ -29,6 +29,7 @@ import NotFound from './pages/NotFound';
 import RoleSelection from './pages/RoleSelection';
 import EducatorEvents from './pages/EducatorEvents';
 import EducatorDashboard from './pages/EducatorDashboard';
+import ManageTemplatesPage from './pages/ManageTemplatesPage'; // Import the new page
 
 // Create a client
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ function App() {
                   <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
                   <Route path="/educator/dashboard" element={<ProtectedRoute><EducatorDashboard /></ProtectedRoute>} />
                   <Route path="/educator/events" element={<ProtectedRoute><EducatorEvents /></ProtectedRoute>} />
+                  <Route path="/manage-templates" element={<ProtectedRoute><ManageTemplatesPage /></ProtectedRoute>} /> {/* Add new route */}
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />
