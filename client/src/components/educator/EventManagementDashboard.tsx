@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query'; // Import useQueryClient
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { apiClient } from '@/lib/api';
+import { useEventsQuery } from '@/hooks/useEventsQuery'; // Import useEventsQuery
 import { EventCreationFlow } from './EventCreationFlow';
 import { 
   QrCode, 
@@ -45,44 +46,36 @@ export default function EventManagementDashboard({
 }: EventManagementDashboardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [events, setEvents] = useState<AcademicEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient(); // Get queryClient instance
+  const { data: events = [], isLoading: loading, error } = useEventsQuery(); // Use hook
   const [showCreationFlow, setShowCreationFlow] = useState(showCreateFlow);
 
   useEffect(() => {
-    loadEvents();
-    
     // Check if we should show creation flow with template or direct create
+    // This effect is for UI state based on URL params, separate from data loading
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('useTemplate') === 'true' || urlParams.get('create') === 'true') {
       setShowCreationFlow(true);
       // Clear URL parameter after processing
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [user]);
+  }, []); // Run once on mount to check URL params
 
-  const loadEvents = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      const userEvents = await apiClient.getEvents();
-      setEvents(userEvents || []);
-    } catch (error: any) {
+  // Effect for error display if query fails
+  useEffect(() => {
+    if (error) {
       console.error('Failed to load events:', error);
       toast({
         title: "Loading Error",
         description: error?.message || "Failed to load your academic events.",
         variant: "destructive"
       });
-      setEvents([]);
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [error, toast]);
 
   const handleEventCreated = (newEvent: any) => {
-    setEvents(prev => [newEvent, ...prev]);
+    // Invalidate the events query to refetch and show the new event
+    queryClient.invalidateQueries({ queryKey: ['events'] });
     setShowCreationFlow(false);
     onCreateComplete?.();
     toast({
@@ -142,8 +135,59 @@ export default function EventManagementDashboard({
   // Show loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+      <div className="space-y-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="h-7 bg-gray-200 rounded w-48 mb-1"></div>
+            <div className="h-4 bg-gray-200 rounded w-64"></div>
+          </div>
+          <div className="h-10 bg-gray-200 rounded w-48"></div>
+        </div>
+
+        {/* Quick Stats Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="h-4 bg-gray-200 rounded w-20 mb-1"></div>
+                    <div className="h-6 bg-gray-200 rounded w-10"></div>
+                  </div>
+                  <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Events List Skeleton */}
+        <div className="space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-1/3 mb-2"></div>
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="flex items-center gap-6 mb-4">
+                      <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      <div className="h-4 bg-gray-200 rounded w-32"></div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 bg-gray-200 rounded w-24"></div>
+                      <div className="h-8 bg-gray-200 rounded w-24"></div>
+                      <div className="h-8 bg-gray-200 rounded w-24"></div>
+                    </div>
+                  </div>
+                  <div className="ml-4 h-8 w-8 bg-gray-200 rounded"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
