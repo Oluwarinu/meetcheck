@@ -31,7 +31,7 @@ export default function Dashboard() {
   // Redirect educators to their specialized dashboard
   useEffect(() => {
     if (userRole === 'educator') {
-      navigate('/educator/events', { replace: true });
+      navigate('/educator/dashboard', { replace: true });
       return;
     }
   }, [userRole, navigate]);

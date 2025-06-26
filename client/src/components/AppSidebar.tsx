@@ -24,7 +24,7 @@ import {
 const getNavigation = (userRole?: string) => {
   if (userRole === 'educator') {
     return [
-      { name: 'Educator Dashboard', href: '/educator/events', icon: LayoutDashboard },
+      { name: 'Educator Dashboard', href: '/educator/dashboard', icon: LayoutDashboard },
       { name: 'Academic Events', href: '/educator/events', icon: Calendar },
       { name: 'Course Templates', href: '/templates', icon: FileText },
       { name: 'Academic Analytics', href: '/analytics', icon: BarChart3 },
