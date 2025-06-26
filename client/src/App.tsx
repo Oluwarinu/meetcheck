@@ -26,6 +26,7 @@ import Upgrade from './pages/Upgrade';
 import ForgotPassword from './pages/ForgotPassword';
 import NotFound from './pages/NotFound';
 import RoleSelection from './pages/RoleSelection';
+import EducatorEvents from './pages/EducatorEvents';
 
 function App() {
   return (
@@ -56,6 +57,7 @@ function App() {
                   <Route path="/templates" element={<ProtectedRoute><Templates /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="/upgrade" element={<ProtectedRoute><Upgrade /></ProtectedRoute>} />
+                  <Route path="/educator/events" element={<ProtectedRoute><EducatorEvents /></ProtectedRoute>} />
                 </Route>
                 
                 <Route path="/404" element={<NotFound />} />

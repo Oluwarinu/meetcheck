@@ -88,12 +88,7 @@ class ApiClient {
     return this.request<any>(`/events/${id}`);
   }
 
-  async updateEvent(id: string, updates: any): Promise<any> {
-    return this.request<any>(`/events/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updates),
-    });
-  }
+
 
   async deleteEvent(id: string): Promise<any> {
     return this.request<any>(`/events/${id}`, {
