@@ -15,7 +15,9 @@ import {
   BarChart3,
   PieChart,
   UserCheck,
-  Clock
+  Clock,
+  Plus,
+  Zap
 } from 'lucide-react';
 
 interface EducatorDashboardProps {
@@ -202,72 +204,46 @@ const EducatorDashboard: React.FC<EducatorDashboardProps> = ({ userRole }) => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-6">
-            <Card>
+          <div className="grid md:grid-cols-1 gap-6">
+            <Card className="border-purple-200">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Attendance Distribution by Course
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { course: 'CS101', rate: 92.1 },
-                    { course: 'MATH201', rate: 87.3 },
-                    { course: 'ENG102', rate: 89.5 },
-                    { course: 'PHYS301', rate: 84.2 }
-                  ].map(({ course, rate }) => (
-                    <div key={course} className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm font-medium">{course}</span>
-                        <span className="text-sm text-gray-600">{rate}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
-                          style={{ width: `${rate}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                  <CardTitle className="text-lg text-purple-900">Quick Actions</CardTitle>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5" />
-                  Grade Distribution
-                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { grade: 'A (90-100%)', count: 45, color: 'bg-blue-600' },
-                    { grade: 'B (80-89%)', count: 78, color: 'bg-blue-600' },
-                    { grade: 'C (70-79%)', count: 89, color: 'bg-blue-600' },
-                    { grade: 'D (60-69%)', count: 23, color: 'bg-blue-600' },
-                    { grade: 'F (<60%)', count: 5, color: 'bg-blue-600' }
-                  ].map(({ grade, count, color }) => {
-                    const percentage = (count / 240) * 100;
-                    return (
-                      <div key={grade} className="space-y-2">
-                        <div className="flex justify-between">
-                          <span className="text-sm font-medium">{grade}</span>
-                          <span className="text-sm text-gray-600">{count} students</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className={`${color} h-2 rounded-full`} 
-                            style={{ width: `${percentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+              <CardContent className="grid gap-3">
+                <Button
+                  variant="outline"
+                  className="justify-start border-purple-200 text-purple-700 hover:bg-purple-50"
+                  onClick={() => window.location.href = '/create-event'}
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Create Academic Event
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-start border-purple-200 text-purple-700 hover:bg-purple-50"
+                  onClick={() => window.location.href = '/templates'}
+                >
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Browse Course Templates
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-start border-purple-200 text-purple-700 hover:bg-purple-50"
+                  onClick={() => window.location.href = '/analytics'}
+                >
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  View Academic Analytics
+                </Button>
+                <Button
+                  variant="outline"
+                  className="justify-start border-purple-200 text-purple-700 hover:bg-purple-50"
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4" />
+                  Early Intervention Alerts
+                </Button>
               </CardContent>
             </Card>
           </div>
