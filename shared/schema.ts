@@ -135,6 +135,8 @@ export const insertEventSchema = createInsertSchema(events).pick({
   flier_data: true,
   checkin_enabled: true,
   checkin_deadline: true,
+  location_verification: true,
+  industry_type: true,
 });
 
 export const insertParticipantSchema = createInsertSchema(participants).pick({

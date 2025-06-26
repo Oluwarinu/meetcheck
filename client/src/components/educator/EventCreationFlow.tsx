@@ -127,8 +127,7 @@ export const EventCreationFlow: React.FC<EventCreationFlowProps> = ({ onComplete
         participant_fields: eventData.participant_fields.filter(field => field.enabled),
         industry_type: 'education',
         checkin_enabled: true,
-        location_verification: false,
-        created_by: user.id
+        location_verification: false
       };
 
       const createdEvent = await apiClient.createEvent(academicEventPayload);
