@@ -22,13 +22,9 @@ import {
 } from 'lucide-react';
 
 const getNavigation = (userRole?: string) => {
-  const baseNav = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  ];
-
   if (userRole === 'educator') {
     return [
-      ...baseNav,
+      { name: 'Educator Dashboard', href: '/educator/events', icon: LayoutDashboard },
       { name: 'Academic Events', href: '/educator/events', icon: Calendar },
       { name: 'Course Templates', href: '/templates', icon: FileText },
       { name: 'Academic Analytics', href: '/analytics', icon: BarChart3 },
@@ -37,7 +33,7 @@ const getNavigation = (userRole?: string) => {
   }
 
   return [
-    ...baseNav,
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Events', href: '/events', icon: Calendar },
     { name: 'Templates', href: '/templates', icon: FileText },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },

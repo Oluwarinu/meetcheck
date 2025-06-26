@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,11 +7,11 @@ import { StatsCard } from "@/components/StatsCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiClient } from "@/lib/api";
 import IndustryDashboard from "@/components/industry/IndustryDashboard";
-import EducatorDashboard from "@/components/educator/EducatorDashboard";
 import { Plus, Calendar, Users, TrendingUp, Clock, Eye, QrCode, Building2 } from "lucide-react";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<any[]>([]);
   const [stats, setStats] = useState({
     totalEvents: 0,
@@ -27,6 +27,14 @@ export default function Dashboard() {
   const userIndustryType = userRole === 'educator' ? 'education' : 
                           userRole === 'training_manager' ? 'corporate' : 
                           userRole === 'hr_leader' ? 'corporate' : 'networking';
+
+  // Redirect educators to their specialized dashboard
+  useEffect(() => {
+    if (userRole === 'educator') {
+      navigate('/educator/events', { replace: true });
+      return;
+    }
+  }, [userRole, navigate]);
 
 
 
@@ -87,10 +95,6 @@ export default function Dashboard() {
 
   // Show role-specific dashboard by default if user has a role
   if (userRole && !loading) {
-    if (userRole === 'educator') {
-      return <EducatorDashboard userRole={userRole} />;
-    }
-    
     if (showIndustryDashboard && userIndustryType) {
       return (
         <div className="space-y-6">
@@ -115,23 +119,8 @@ export default function Dashboard() {
 
   // If no role selected, redirect to role selection
   if (!userRole && !loading) {
-
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="max-w-md w-full text-center">
-          <h2 className="text-2xl font-bold mb-4">Welcome to MeetCheck!</h2>
-          <p className="text-gray-600 mb-6">
-            To get started, please select your role to access customized features and templates.
-          </p>
-          <Button 
-            onClick={() => window.location.href = '/role-selection'}
-            className="w-full"
-          >
-            Choose Your Role
-          </Button>
-        </div>
-      </div>
-    );
+    navigate('/role-selection', { replace: true });
+    return null;
   }
 
 

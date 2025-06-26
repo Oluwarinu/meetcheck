@@ -51,9 +51,9 @@ export const EventManagementDashboard: React.FC<EventManagementDashboardProps> =
   useEffect(() => {
     loadEvents();
     
-    // Check if we should show creation flow with template
+    // Check if we should show creation flow with template or direct create
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('useTemplate') === 'true') {
+    if (urlParams.get('useTemplate') === 'true' || urlParams.get('create') === 'true') {
       setShowCreationFlow(true);
       // Clear URL parameter after processing
       window.history.replaceState({}, '', window.location.pathname);
