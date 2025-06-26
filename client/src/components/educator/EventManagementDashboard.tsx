@@ -45,8 +45,10 @@ export default function EventManagementDashboard({
 }: EventManagementDashboardProps) {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [events, setEvents] = useState<AcademicEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: events = [], isLoading: loading } = useEvents();
+  const createEventMutation = useCreateEvent();
+  const updateEventMutation = useUpdateEvent();
+  const deleteEventMutation = useDeleteEvent();
   const [showCreationFlow, setShowCreationFlow] = useState(showCreateFlow);
 
   useEffect(() => {
@@ -141,11 +143,7 @@ export default function EventManagementDashboard({
 
   // Show loading state
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-      </div>
-    );
+    return <EventManagementSkeleton />;
   }
 
   return (

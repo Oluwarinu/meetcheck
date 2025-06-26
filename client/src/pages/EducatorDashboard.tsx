@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { apiClient } from '@/lib/api';
+import { useEvents, useEventStats } from '@/hooks/useEvents';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   BookOpen, 
   Users, 
@@ -18,51 +19,92 @@ import {
   CheckCircle
 } from 'lucide-react';
 
+// Skeleton component for loading state
+function EducatorDashboardSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Header Skeleton */}
+      <div className="flex items-center justify-between">
+        <div>
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-40" />
+        </div>
+        <Skeleton className="h-10 w-48" />
+      </div>
+
+      {/* Stats Grid Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <Skeleton className="h-4 w-20 mb-2" />
+                  <Skeleton className="h-8 w-12 mb-1" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+                <Skeleton className="h-10 w-10 rounded-full" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Content Area Skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-8 w-20" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-5 w-16" />
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-28" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-8 w-12" />
+                    <Skeleton className="h-8 w-20" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export default function EducatorDashboard() {
   const { user } = useAuth();
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalEvents: 0,
-    activeEvents: 0,
-    totalStudents: 0,
-    avgAttendance: 87
-  });
-
-  useEffect(() => {
-    loadDashboardData();
-  }, [user]);
-
-  const loadDashboardData = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      const userEvents = await apiClient.getEvents();
-      setEvents(userEvents || []);
-      
-      // Calculate stats
-      const today = new Date();
-      const activeEvents = userEvents.filter((event: any) => {
-        const eventDate = new Date(event.date);
-        return eventDate.toDateString() === today.toDateString();
-      }).length;
-      
-      const totalStudents = userEvents.reduce((sum: number, event: any) => 
-        sum + (event.current_attendees || 0), 0);
-      
-      setStats({
-        totalEvents: userEvents.length,
-        activeEvents,
-        totalStudents,
-        avgAttendance: 87
-      });
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: events = [], isLoading: eventsLoading } = useEvents();
+  const { stats, isLoading: statsLoading } = useEventStats();
+  
+  const loading = eventsLoading || statsLoading;
 
   const getEventStatus = (event: any) => {
     const eventDate = new Date(event.date);
@@ -91,11 +133,7 @@ export default function EducatorDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-      </div>
-    );
+    return <EducatorDashboardSkeleton />;
   }
 
   const recentEvents = events.slice(0, 3);
